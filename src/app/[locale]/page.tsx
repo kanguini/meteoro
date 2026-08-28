@@ -26,14 +26,17 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <span key={line}>{line}</span>
         ))}
         lead={home.hero.lead}
+        /*
+          INTERINO: a capa definitiva é /images/capa-estaleiro.jpg (a lona da marca
+          no estaleiro). Está de fora porque a lona dessa versão diz "Projects build
+          trust." e entra em conflito com o slogan no H1. Trocar de volta assim que
+          chegar a imagem com o texto certo — a lona ocupa o centro do enquadramento,
+          não há object-position que a esconda.
+        */
         image={{
-          src: '/images/capa-estaleiro.jpg',
-          alt:
-            locale === 'pt'
-              ? 'Lona da Meteoro 24 num edifício em construção, com gruas e a baía de Luanda ao fundo'
-              : 'Meteoro 24 banner on a building under construction, with cranes and the Luanda bay behind',
+          src: '/images/hero-obra.jpg',
+          alt: content.services.items[2].image?.alt ?? '',
         }}
-        imagePosition="72% center"
         meta={[`${site.name} · ${site.descriptor[locale]}`, `${content.footer.country} · ${site.founded}`]}
         actions={
           <>
