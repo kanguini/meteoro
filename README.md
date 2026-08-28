@@ -58,9 +58,17 @@ npm start
 ```
 
 O `/api/contact` corre no servidor, por isso o site precisa de um alojamento com
-Node (Vercel, Railway). Para alojamento estático (Hostinger), acrescentar
-`output: 'export'` ao `next.config.mjs`, `images.unoptimized: true` e substituir
-o formulário por um serviço externo — a rota de API deixa de funcionar.
+Node (Hostinger Node, Vercel, Railway). O `start` não fixa porta — usa a variável
+`PORT` que o alojamento injecta.
+
+**O build usa Webpack, não Turbopack** (`next build --webpack`). O Turbopack, que
+é o motor por omissão do Next 16, exige bindings nativas que faltam no ambiente de
+compilação da Hostinger — o build falha com *"Turbopack is not supported on this
+platform (linux/x64)"*. Não remover a flag.
+
+Para alojamento estático puro, acrescentar `output: 'export'` ao `next.config.mjs`
+e `images.unoptimized: true`, e substituir o formulário por um serviço externo — a
+rota de API deixa de funcionar.
 
 ## Notas de acessibilidade e desempenho
 
