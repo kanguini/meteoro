@@ -56,7 +56,7 @@ export type Content = {
     languageLabel: string;
   };
   home: {
-    hero: { eyebrow: string; title: string[]; lead: string; ctaPrimary: string; ctaSecondary: string };
+    hero: { eyebrow: string; statement: string[]; lead: string; ctaPrimary: string; ctaSecondary: string };
     intro: { eyebrow: string; title: string; lead: string; pillars: Pillar[] };
     about: { eyebrow: string; title: string; body: string[]; keywords: string[]; cta: string };
     services: { eyebrow: string; title: string; lead: string; cta: string };

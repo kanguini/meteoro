@@ -32,7 +32,7 @@ export const pt: Content = {
   home: {
     hero: {
       eyebrow: 'Angola · Construção e Gestão de Projectos',
-      title: ['Construção com método.', 'Gestão com rigor.'],
+      statement: ['Construção com método.', 'Gestão com rigor.'],
       lead: 'Planeamos, controlamos e executamos projectos no ramo da construção.',
       ctaPrimary: 'Falar connosco',
       ctaSecondary: 'Ver serviços',

@@ -8,16 +8,22 @@ import type { Pillar, Step } from '@/i18n/types';
 export function ImageHero({
   eyebrow,
   title,
+  statement,
   lead,
   image,
+  imagePosition,
   actions,
   meta,
   large = false,
 }: {
   eyebrow: string;
   title: React.ReactNode;
+  /** linha de posicionamento sob o título — usada quando o H1 é o slogan da marca */
+  statement?: React.ReactNode;
   lead?: string;
   image: { src: string; alt: string };
+  /** `object-position` da fotografia, para afastar o motivo principal do texto */
+  imagePosition?: string;
   actions?: React.ReactNode;
   meta?: [string, string];
   large?: boolean;
@@ -25,7 +31,14 @@ export function ImageHero({
   return (
     <section className={['hero', large ? '' : 'hero--page'].join(' ')}>
       <div className="hero__media">
-        <Image src={image.src} alt={image.alt} fill priority sizes="100vw" style={{ objectFit: 'cover' }} />
+        <Image
+          src={image.src}
+          alt={image.alt}
+          fill
+          priority
+          sizes="100vw"
+          style={{ objectFit: 'cover', objectPosition: imagePosition ?? 'center' }}
+        />
       </div>
       <div className="hero__scrim" />
       <div className="container hero__inner">
@@ -35,6 +48,11 @@ export function ImageHero({
         <Reveal mode="load" delay={100}>
           <h1 className={large ? 'display hero__title' : 'h1 hero__title'}>{title}</h1>
         </Reveal>
+        {statement && (
+          <Reveal mode="load" delay={160}>
+            <p className="hero__statement">{statement}</p>
+          </Reveal>
+        )}
         {lead && (
           <Reveal mode="load" delay={200}>
             <p className="lead hero__lead">{lead}</p>

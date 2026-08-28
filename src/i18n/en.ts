@@ -32,7 +32,7 @@ export const en: Content = {
   home: {
     hero: {
       eyebrow: 'Angola · Construction and Project Management',
-      title: ['Construction with method.', 'Management with rigour.'],
+      statement: ['Construction with method.', 'Management with rigour.'],
       lead: 'We plan, control and deliver projects across the construction sector.',
       ctaPrimary: 'Talk to us',
       ctaSecondary: 'View services',

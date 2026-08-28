@@ -20,12 +20,21 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <ImageHero
         large
         eyebrow={home.hero.eyebrow}
-        title={home.hero.title.map((line) => (
+        /* O H1 é o slogan da marca — não se traduz. */
+        title={site.slogan}
+        statement={home.hero.statement.map((line) => (
           <span key={line}>{line}</span>
         ))}
         lead={home.hero.lead}
-        image={{ src: '/images/hero-obra.jpg', alt: content.services.items[2].image?.alt ?? '' }}
-        meta={[site.slogan, `${content.footer.country} · ${site.founded}`]}
+        image={{
+          src: '/images/capa-estaleiro.jpg',
+          alt:
+            locale === 'pt'
+              ? 'Lona da Meteoro 24 num edifício em construção, com gruas e a baía de Luanda ao fundo'
+              : 'Meteoro 24 banner on a building under construction, with cranes and the Luanda bay behind',
+        }}
+        imagePosition="72% center"
+        meta={[`${site.name} · ${site.descriptor[locale]}`, `${content.footer.country} · ${site.founded}`]}
         actions={
           <>
             <Link href={href(locale, paths.contact)} className="btn btn--red">

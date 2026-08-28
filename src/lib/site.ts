@@ -1,9 +1,8 @@
 /**
  * Dados institucionais da Meteoro 24.
  *
- * ATENÇÃO: os contactos abaixo são PLACEHOLDERS. A apresentação institucional
- * não inclui telefone, email, morada nem NIF. Substituir antes de publicar —
- * este é o único ficheiro que precisa de ser editado para isso.
+ * Contactos confirmados pelo cliente em Ago/2026. Falta ainda o NIF e as redes
+ * sociais. O domínio em `url` é provisório — actualizar quando estiver definido.
  */
 export const site = {
   name: 'Meteoro 24',
@@ -17,12 +16,11 @@ export const site = {
   url: 'https://meteoro24.ao',
   founded: '2024',
 
-  // TODO: substituir pelos contactos reais
-  phone: '+244 900 000 000',
-  phoneHref: '+244900000000',
-  email: 'geral@meteoro24.ao',
+  phone: '+244 927 635 946',
+  phoneHref: '+244927635946',
+  email: 'geral@inovholding.com',
   address: {
-    street: 'Luanda',
+    street: 'Avenida Comandante Gika, 241, 1C',
     city: 'Luanda',
     country: {
       pt: 'Angola',
@@ -40,5 +38,3 @@ export const site = {
   },
 } as const;
 
-/** true enquanto os contactos forem os de exemplo. */
-export const contactsArePlaceholders = site.phoneHref === '+244900000000';
