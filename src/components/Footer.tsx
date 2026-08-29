@@ -2,10 +2,19 @@ import Link from 'next/link';
 import { Logo } from './Logo';
 import { href, paths, serviceHref } from '@/lib/routes';
 import { site } from '@/lib/site';
+import type { Settings } from '@/lib/content';
 import type { Locale } from '@/i18n/config';
 import type { Content } from '@/i18n/types';
 
-export function Footer({ locale, content }: { locale: Locale; content: Content }) {
+export function Footer({
+  locale,
+  content,
+  settings,
+}: {
+  locale: Locale;
+  content: Content;
+  settings: Settings;
+}) {
   const year = new Date().getFullYear();
 
   return (
@@ -14,7 +23,7 @@ export function Footer({ locale, content }: { locale: Locale; content: Content }
         <div className="footer__top">
           <div>
             <Logo />
-            <p className="footer__slogan">{site.slogan}</p>
+            <p className="footer__slogan">{settings.slogan}</p>
             <p className="footer__descriptor">{site.descriptor[locale]}</p>
           </div>
 
@@ -51,13 +60,13 @@ export function Footer({ locale, content }: { locale: Locale; content: Content }
             <h2 className="footer__heading">{content.footer.sections.contact}</h2>
             <ul className="footer__list">
               <li>
-                <a href={`tel:${site.phoneHref}`}>{site.phone}</a>
+                <a href={`tel:${settings.phoneHref}`}>{settings.phone}</a>
               </li>
               <li>
-                <a href={`mailto:${site.email}`}>{site.email}</a>
+                <a href={`mailto:${settings.email}`}>{settings.email}</a>
               </li>
               <li>
-                {site.address.city}, {site.address.country[locale]}
+                {settings.addressCity}, {site.address.country[locale]}
               </li>
             </ul>
           </div>

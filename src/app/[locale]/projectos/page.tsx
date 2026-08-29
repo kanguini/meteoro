@@ -6,7 +6,8 @@ import { PageShell } from '@/components/PageShell';
 import { Reveal } from '@/components/Reveal';
 import { PlainHero } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
-import { getContent, isLocale, locales } from '@/i18n';
+import { isLocale, locales } from '@/i18n';
+import { getProjects, getSiteContent } from '@/lib/content';
 import { href, paths, serviceHref } from '@/lib/routes';
 
 export function generateStaticParams() {
@@ -20,7 +21,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
   return {
     title: content.nav.projects,
     description: content.projects.hero.lead,
@@ -32,21 +33,68 @@ export default async function ProjectsPage({ params }: { params: Promise<{ local
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
   const { projects } = content;
+  const works = await getProjects(locale);
 
   return (
     <PageShell locale={locale} content={content}>
       <PlainHero eyebrow={projects.hero.eyebrow} title={projects.hero.title} lead={projects.hero.lead} />
 
-      <section className="section section--tight">
-        <div className="container">
-          <Reveal className="notice">
-            <h2 className="h4">{projects.notice.title}</h2>
-            <p className="body-text">{projects.notice.body}</p>
-          </Reveal>
-        </div>
-      </section>
+      {/*
+        O aviso de "portefólio em preparação" desaparece sozinho assim que
+        houver obras publicadas no painel — não é preciso lembrar-se de o tirar.
+      */}
+      {works.length === 0 && (
+        <section className="section section--tight">
+          <div className="container">
+            <Reveal className="notice">
+              <h2 className="h4">{projects.notice.title}</h2>
+              <p className="body-text">{projects.notice.body}</p>
+            </Reveal>
+          </div>
+        </section>
+      )}
+
+      {works.length > 0 && (
+        <section className="section section--tight">
+          <div className="container">
+            <div className="typology-grid">
+              {works.map((work, index) => (
+                <Reveal key={work.slug} delay={index * 60}>
+                  <article className={['typology', work.coverImage ? '' : 'typology--plain'].filter(Boolean).join(' ')}>
+                    {work.coverImage && (
+                      <>
+                        <Image
+                          src={work.coverImage}
+                          alt={work.title}
+                          fill
+                          sizes="(max-width: 900px) 100vw, 33vw"
+                          style={{ objectFit: 'cover' }}
+                        />
+                        <span className="typology__scrim" />
+                      </>
+                    )}
+                    <span className="typology__content">
+                      <span className="typology__num">
+                        {[work.location, work.year].filter(Boolean).join(' · ')}
+                      </span>
+                      <span className="typology__title" style={{ display: 'block' }}>
+                        {work.title}
+                      </span>
+                      {work.summary && (
+                        <span className="typology__text" style={{ display: 'block' }}>
+                          {work.summary}
+                        </span>
+                      )}
+                    </span>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="section">
         <div className="container">

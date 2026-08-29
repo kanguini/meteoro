@@ -76,3 +76,51 @@ rota de API deixa de funcionar.
   menu móvel (a navegação completa continua disponível no rodapé).
 - `prefers-reduced-motion` desliga todas as animações.
 - Contraste, foco visível e `skip link` verificados.
+
+## Painel de administração
+
+O conteúdo do site é editável em `/admin`. Serve-se de Postgres (Supabase) e, se
+a base de dados não estiver configurada ou estiver em baixo, o site **serve o
+conteúdo estático** de `src/i18n/pt.ts` e `en.ts` em vez de rebentar. É por isso
+que o `next build` corre sem `DATABASE_URL`.
+
+### O que se edita
+
+| Secção | Conteúdo |
+| --- | --- |
+| Definições | Contactos, horário, slogan, redes sociais, imagem de capa |
+| Textos das páginas | Todos os textos, PT e EN lado a lado |
+| Serviços | Criar, editar, reordenar, publicar/ocultar |
+| Obras | Portefólio com galeria, cliente, local e ano |
+| Mensagens | Tudo o que chega pelo formulário de contacto |
+| Imagens | Biblioteca partilhada por todas as secções |
+| Utilizadores | Contas de acesso (só para quem tem papel *owner*) |
+
+### Arranque
+
+```bash
+cp .env.example .env.local     # preencher DATABASE_URL e as chaves do Supabase
+npm run db:push                # cria as tabelas
+npm run db:seed                # carrega o conteúdo actual do site para a base de dados
+npm run admin:create -- --email pessoa@empresa.ao --nome "Nome" --papel owner
+```
+
+O `db:seed` é idempotente e não pisa conteúdo já editado. Para repor os textos
+originais de raiz: `npm run db:seed -- --force`.
+
+### Notas de implementação
+
+- **Passwords** com `scrypt` do próprio Node. Nada de bcrypt ou argon2: exigem
+  compilação nativa, e o ambiente de build da Hostinger já mostrou que não a
+  suporta (ver a nota do Turbopack acima).
+- **Sessões** em cookie `httpOnly`; a base de dados guarda apenas o SHA-256 do
+  token, nunca o token.
+- **O `middleware.ts` só verifica se o cookie existe.** Corre no runtime edge e
+  não tem acesso à base de dados, por isso é conveniência e não segurança — a
+  verificação a sério é o `requireUser()`, repetido em cada página e em cada
+  server action.
+- **O editor de textos é gerado a partir da estrutura do conteúdo**
+  (`src/lib/json-form.ts`). Acrescentar um campo ao tipo `Content` faz aparecer
+  o campo no painel sem escrever formulário nenhum.
+- O Next 16 avisa que `middleware` está depreciado a favor de `proxy`. Continua
+  a funcionar; a migração fica para quando a API estabilizar.

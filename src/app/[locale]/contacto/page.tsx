@@ -4,7 +4,8 @@ import { PageShell } from '@/components/PageShell';
 import { Reveal } from '@/components/Reveal';
 import { PlainHero } from '@/components/Blocks';
 import { ContactForm } from '@/components/ContactForm';
-import { getContent, isLocale, locales } from '@/i18n';
+import { isLocale, locales } from '@/i18n';
+import { getSettings, getSiteContent } from '@/lib/content';
 import { href, paths } from '@/lib/routes';
 import { site } from '@/lib/site';
 
@@ -19,7 +20,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
   return {
     title: content.nav.contact,
     description: content.contact.hero.lead,
@@ -31,7 +32,8 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
+  const settings = await getSettings(locale);
   const { contact } = content;
 
   return (
@@ -46,30 +48,30 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               <div className="contact-detail">
                 <span className="contact-detail__label">{contact.details.phoneLabel}</span>
                 <p className="contact-detail__value">
-                  <a href={`tel:${site.phoneHref}`}>{site.phone}</a>
+                  <a href={`tel:${settings.phoneHref}`}>{settings.phone}</a>
                 </p>
               </div>
               <div className="contact-detail">
                 <span className="contact-detail__label">{contact.details.emailLabel}</span>
                 <p className="contact-detail__value">
-                  <a href={`mailto:${site.email}`}>{site.email}</a>
+                  <a href={`mailto:${settings.email}`}>{settings.email}</a>
                 </p>
               </div>
               <div className="contact-detail">
                 <span className="contact-detail__label">{contact.details.addressLabel}</span>
                 <p className="contact-detail__value">
-                  {site.address.street}, {site.address.country[locale]}
+                  {settings.addressStreet}, {settings.addressCity}, {site.address.country[locale]}
                 </p>
               </div>
               <div className="contact-detail">
                 <span className="contact-detail__label">{contact.details.hoursLabel}</span>
-                <p className="contact-detail__value">{site.hours[locale]}</p>
+                <p className="contact-detail__value">{settings.hours}</p>
               </div>
             </div>
           </Reveal>
 
           <Reveal delay={120}>
-            <ContactForm content={content} />
+            <ContactForm content={content} fallbackEmail={settings.email} />
           </Reveal>
         </div>
       </section>

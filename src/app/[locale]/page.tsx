@@ -4,7 +4,8 @@ import { PageShell } from '@/components/PageShell';
 import { Reveal } from '@/components/Reveal';
 import { ArrowLink, ImageHero, Keywords, Pillars, Steps, ValueGrid } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
-import { getContent, isLocale } from '@/i18n';
+import { isLocale } from '@/i18n';
+import { getSettings, getSiteContent } from '@/lib/content';
 import { href, paths, serviceHref } from '@/lib/routes';
 import { site } from '@/lib/site';
 
@@ -12,7 +13,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
+  const settings = await getSettings(locale);
   const { home, services } = content;
 
   return (
@@ -20,22 +22,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <ImageHero
         large
         eyebrow={home.hero.eyebrow}
-        /* O H1 é o slogan da marca — não se traduz. */
-        title={site.slogan}
+        /* O H1 é o slogan da marca — não se traduz. Editável em Definições. */
+        title={settings.slogan}
         statement={home.hero.statement.map((line) => (
           <span key={line}>{line}</span>
         ))}
         lead={home.hero.lead}
-        /*
-          INTERINO: a capa definitiva é /images/capa-estaleiro.jpg (a lona da marca
-          no estaleiro). Está de fora porque a lona dessa versão diz "Projects build
-          trust." e entra em conflito com o slogan no H1. Trocar de volta assim que
-          chegar a imagem com o texto certo — a lona ocupa o centro do enquadramento,
-          não há object-position que a esconda.
-        */
         image={{
-          src: '/images/hero-obra.jpg',
-          alt: content.services.items[2].image?.alt ?? '',
+          src: settings.coverImage,
+          alt: settings.coverAlt || content.services.items[2]?.image?.alt || '',
         }}
         meta={[`${site.name} · ${site.descriptor[locale]}`, `${content.footer.country} · ${site.founded}`]}
         actions={

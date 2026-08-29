@@ -5,7 +5,8 @@ import { PageShell } from '@/components/PageShell';
 import { Reveal } from '@/components/Reveal';
 import { PlainHero } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
-import { getContent, isLocale, locales } from '@/i18n';
+import { isLocale, locales } from '@/i18n';
+import { getSiteContent } from '@/lib/content';
 import { href, paths, serviceHref } from '@/lib/routes';
 
 export function generateStaticParams() {
@@ -19,7 +20,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
   return {
     title: content.nav.services,
     description: content.services.hero.lead,
@@ -31,7 +32,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
 
   return (
     <PageShell locale={locale} content={content}>

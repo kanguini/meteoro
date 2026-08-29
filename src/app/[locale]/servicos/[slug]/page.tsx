@@ -6,14 +6,19 @@ import { PageShell } from '@/components/PageShell';
 import { Reveal } from '@/components/Reveal';
 import { ImageHero, Keywords, PlainHero } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
-import { getContent, isLocale, locales } from '@/i18n';
+import { isLocale, locales } from '@/i18n';
+import { getSiteContent } from '@/lib/content';
 import { href, paths, serviceHref } from '@/lib/routes';
-import { pt } from '@/i18n/pt';
+import { getServices } from '@/lib/content';
 
-export function generateStaticParams() {
-  return locales.flatMap((locale) =>
-    pt.services.items.map((service) => ({ locale, slug: service.slug })),
-  );
+/**
+ * Os serviços vêm da base de dados, por isso a lista de páginas a pré-gerar
+ * também. Um serviço criado depois do build é servido na mesma — o Next gera-o
+ * no primeiro pedido, porque `dynamicParams` está ligado por omissão.
+ */
+export async function generateStaticParams() {
+  const services = await getServices('pt');
+  return locales.flatMap((locale) => services.map((service) => ({ locale, slug: service.slug })));
 }
 
 export async function generateMetadata({
@@ -24,7 +29,7 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   if (!isLocale(locale)) return {};
 
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
   const service = content.services.items.find((item) => item.slug === slug);
   if (!service) return {};
 
@@ -43,7 +48,7 @@ export default async function ServicePage({
   const { locale, slug } = await params;
   if (!isLocale(locale)) notFound();
 
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
   const items = content.services.items;
   const index = items.findIndex((item) => item.slug === slug);
   if (index === -1) notFound();

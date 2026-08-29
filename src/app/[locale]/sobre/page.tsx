@@ -6,7 +6,8 @@ import { PageShell } from '@/components/PageShell';
 import { Reveal } from '@/components/Reveal';
 import { Keywords, Pillars, PlainHero } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
-import { getContent, isLocale, locales } from '@/i18n';
+import { isLocale, locales } from '@/i18n';
+import { getSiteContent } from '@/lib/content';
 import { href, paths } from '@/lib/routes';
 
 export function generateStaticParams() {
@@ -20,7 +21,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
   return {
     title: content.nav.about,
     description: content.about.hero.lead,
@@ -32,7 +33,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
   const { about } = content;
 
   return (

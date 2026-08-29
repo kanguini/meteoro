@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Archivo } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import '../globals.css';
-import { getContent, isLocale, locales, type Locale } from '@/i18n';
+import { isLocale, locales, type Locale } from '@/i18n';
+import { getSiteContent } from '@/lib/content';
 import { site } from '@/lib/site';
 
 const archivo = Archivo({
@@ -29,7 +30,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  const content = getContent(locale);
+  const content = await getSiteContent(locale);
 
   return {
     metadataBase: new URL(site.url),
@@ -64,7 +65,7 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound();
 
   const typedLocale: Locale = locale;
-  const content = getContent(typedLocale);
+  const content = await getSiteContent(typedLocale);
 
   return (
     <html lang={typedLocale === 'pt' ? 'pt-AO' : 'en'} className={archivo.variable}>

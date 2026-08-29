@@ -2,13 +2,12 @@
 
 import { useState, type FormEvent } from 'react';
 import { ArrowRight } from './Icons';
-import { site } from '@/lib/site';
 import type { Content } from '@/i18n/types';
 
 type Errors = Partial<Record<'name' | 'email' | 'message', string>>;
 type Status = 'idle' | 'sending' | 'success' | 'error' | 'not_configured';
 
-export function ContactForm({ content }: { content: Content }) {
+export function ContactForm({ content, fallbackEmail }: { content: Content; fallbackEmail: string }) {
   const t = content.contact.form;
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<Status>('idle');
@@ -46,6 +45,7 @@ export function ContactForm({ content }: { content: Content }) {
           message,
           phone: String(data.get('phone') ?? '').trim(),
           subject: String(data.get('subject') ?? '').trim(),
+          locale: document.documentElement.lang.startsWith('pt') ? 'pt' : 'en',
         }),
       });
 
@@ -133,8 +133,8 @@ export function ContactForm({ content }: { content: Content }) {
           {status === 'not_configured' && (
             <p className="form__status">
               {t.error}{' '}
-              <a href={`mailto:${site.email}`} style={{ textDecoration: 'underline' }}>
-                {site.email}
+              <a href={`mailto:${fallbackEmail}`} style={{ textDecoration: 'underline' }}>
+                {fallbackEmail}
               </a>
             </p>
           )}
