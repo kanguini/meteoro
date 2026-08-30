@@ -2,16 +2,24 @@ import { and, count, isNull } from 'drizzle-orm';
 import { db } from '@/db';
 import { messages } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
+import { tryQuery } from '@/lib/db-health';
 import { AdminNav } from './AdminNav';
 import { logout } from '../actions';
 
 export default async function PainelLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
 
-  const [unread] = await db
-    .select({ total: count() })
-    .from(messages)
-    .where(and(isNull(messages.readAt), isNull(messages.archivedAt)));
+  // Se esta contagem falhar, a página seguinte explica porquê — a casca não
+  // pode ser o que derruba o painel inteiro.
+  const unreadResult = await tryQuery(async () => {
+    const [row] = await db
+      .select({ total: count() })
+      .from(messages)
+      .where(and(isNull(messages.readAt), isNull(messages.archivedAt)));
+    return row?.total ?? 0;
+  });
+
+  const unread = unreadResult.ok ? unreadResult.data : 0;
 
   return (
     <div className="admin">
@@ -21,7 +29,7 @@ export default async function PainelLayout({ children }: { children: React.React
             Meteoro<span>.24</span>
           </p>
 
-          <AdminNav unread={unread?.total ?? 0} isOwner={user.role === 'owner'} />
+          <AdminNav unread={unread} isOwner={user.role === 'owner'} />
 
           <div className="admin-side__foot">
             <div className="admin-side__user">

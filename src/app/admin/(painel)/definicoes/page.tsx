@@ -2,7 +2,8 @@ import { db } from '@/db';
 import { media, settings } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
 import { site } from '@/lib/site';
-import { AdminHead } from '../ui';
+import { tryQuery } from '@/lib/db-health';
+import { AdminHead, Panel } from '../ui';
 import { SettingsForm } from './SettingsForm';
 
 export const dynamic = 'force-dynamic';
@@ -10,8 +11,24 @@ export const dynamic = 'force-dynamic';
 export default async function DefinicoesPage() {
   await requireUser();
 
-  const [row] = await db.select().from(settings).limit(1);
-  const library = await db.select({ url: media.url, filename: media.filename }).from(media).limit(60);
+  const result = await tryQuery(async () => {
+    const [row] = await db.select().from(settings).limit(1);
+    const library = await db.select({ url: media.url, filename: media.filename }).from(media).limit(60);
+    return { row, library };
+  });
+
+  if (!result.ok) {
+    return (
+      <>
+        <AdminHead title="Definições" description="Não foi possível ler as definições." />
+        <Panel title="O que se passa">
+          <p className="adm-note adm-note--error">{result.problem}</p>
+        </Panel>
+      </>
+    );
+  }
+
+  const { row, library } = result.data;
 
   // Sem registo na base de dados mostramos o que o site serve hoje, para que
   // gravar pela primeira vez não apague nada.

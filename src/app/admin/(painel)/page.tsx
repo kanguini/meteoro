@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { media, messages, projects, services, settings } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
 import { mailerConfigured } from '@/lib/mailer';
+import { tryQuery } from '@/lib/db-health';
 import { AdminHead, Empty, Panel } from './ui';
 
 export const dynamic = 'force-dynamic';
@@ -11,17 +12,37 @@ export const dynamic = 'force-dynamic';
 export default async function ResumoPage() {
   const user = await requireUser();
 
-  const [[unread], [publishedServices], [publishedProjects], [mediaCount], [config], recent] = await Promise.all([
-    db
-      .select({ total: count() })
-      .from(messages)
-      .where(and(isNull(messages.readAt), isNull(messages.archivedAt))),
-    db.select({ total: count() }).from(services).where(eq(services.published, true)),
-    db.select({ total: count() }).from(projects).where(eq(projects.published, true)),
-    db.select({ total: count() }).from(media),
-    db.select().from(settings).limit(1),
-    db.select().from(messages).where(isNull(messages.archivedAt)).orderBy(desc(messages.createdAt)).limit(5),
-  ]);
+  const result = await tryQuery(async () => {
+    const [[unread], [publishedServices], [publishedProjects], [mediaCount], [config], recent] = await Promise.all([
+      db
+        .select({ total: count() })
+        .from(messages)
+        .where(and(isNull(messages.readAt), isNull(messages.archivedAt))),
+      db.select({ total: count() }).from(services).where(eq(services.published, true)),
+      db.select({ total: count() }).from(projects).where(eq(projects.published, true)),
+      db.select({ total: count() }).from(media),
+      db.select().from(settings).limit(1),
+      db.select().from(messages).where(isNull(messages.archivedAt)).orderBy(desc(messages.createdAt)).limit(5),
+    ]);
+
+    return { unread, publishedServices, publishedProjects, mediaCount, config, recent };
+  });
+
+  if (!result.ok) {
+    return (
+      <>
+        <AdminHead title="Resumo" description="O painel não conseguiu ler a base de dados." />
+        <Panel title="O que se passa">
+          <p className="adm-note adm-note--error">{result.problem}</p>
+          <p className="adm-field__hint" style={{ marginTop: '1rem' }}>
+            O site público continua a funcionar: quando a base de dados não responde, ele serve o conteúdo original.
+          </p>
+        </Panel>
+      </>
+    );
+  }
+
+  const { unread, publishedServices, publishedProjects, mediaCount, config, recent } = result.data;
 
   const cards = [
     { label: 'Mensagens por ler', value: unread?.total ?? 0, href: '/admin/mensagens' },
