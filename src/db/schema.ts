@@ -1,48 +1,55 @@
 import {
   boolean,
+  char,
   index,
-  integer,
-  jsonb,
-  pgTable,
+  int,
+  json,
+  mysqlTable,
   primaryKey,
   text,
   timestamp,
   uniqueIndex,
-  uuid,
-} from 'drizzle-orm/pg-core';
+  varchar,
+} from 'drizzle-orm/mysql-core';
+
+/*
+ * MySQL da Hostinger.
+ *
+ * Duas diferenças em relação ao Postgres que se notam em todo o ficheiro:
+ *  - não há tipo uuid nem `defaultRandom()`; as chaves são char(36) e o
+ *    identificador é gerado na aplicação com `crypto.randomUUID()`;
+ *  - índices únicos precisam de comprimento em colunas de texto, por isso os
+ *    campos indexados são varchar e não text.
+ */
 
 /* ==========================================================================
    Acesso ao painel
    ========================================================================== */
 
-export const users = pgTable(
+export const users = mysqlTable(
   'users',
   {
-    id: uuid('id').defaultRandom().primaryKey(),
-    email: text('email').notNull(),
-    name: text('name').notNull(),
+    id: char('id', { length: 36 }).primaryKey(),
+    email: varchar('email', { length: 200 }).notNull(),
+    name: varchar('name', { length: 160 }).notNull(),
     passwordHash: text('password_hash').notNull(),
-    /** 'owner' não pode ser removido nem despromovido pelos outros */
-    role: text('role', { enum: ['owner', 'editor'] })
-      .notNull()
-      .default('editor'),
+    /** 'owner' pode gerir contas; 'editor' só edita conteúdo */
+    role: varchar('role', { length: 16 }).notNull().default('editor').$type<'owner' | 'editor'>(),
     active: boolean('active').notNull().default(true),
-    lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    lastLoginAt: timestamp('last_login_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [uniqueIndex('users_email_unique').on(table.email)],
 );
 
-export const sessions = pgTable(
+export const sessions = mysqlTable(
   'sessions',
   {
     /** hash do token — o valor em claro só existe no cookie do browser */
-    tokenHash: text('token_hash').primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    tokenHash: char('token_hash', { length: 64 }).primaryKey(),
+    userId: char('user_id', { length: 36 }).notNull(),
+    expiresAt: timestamp('expires_at').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [index('sessions_user_idx').on(table.userId)],
 );
@@ -51,113 +58,106 @@ export const sessions = pgTable(
    Conteúdo
    ========================================================================== */
 
-/**
- * Definições globais: contactos, slogan, redes sociais, imagem de capa.
- * Linha única — `id` é sempre 'singleton'.
- */
-export const settings = pgTable('settings', {
-  id: text('id').primaryKey().default('singleton'),
-  phone: text('phone').notNull(),
-  email: text('email').notNull(),
-  addressStreet: text('address_street').notNull(),
-  addressCity: text('address_city').notNull(),
-  slogan: text('slogan').notNull(),
-  hoursPt: text('hours_pt').notNull(),
-  hoursEn: text('hours_en').notNull(),
-  linkedin: text('linkedin').notNull().default(''),
-  instagram: text('instagram').notNull().default(''),
-  facebook: text('facebook').notNull().default(''),
+/** Definições globais. Linha única — `id` é sempre 'singleton'. */
+export const settings = mysqlTable('settings', {
+  id: varchar('id', { length: 16 }).primaryKey(),
+  phone: varchar('phone', { length: 60 }).notNull(),
+  email: varchar('email', { length: 200 }).notNull(),
+  addressStreet: varchar('address_street', { length: 240 }).notNull(),
+  addressCity: varchar('address_city', { length: 120 }).notNull(),
+  slogan: varchar('slogan', { length: 200 }).notNull(),
+  hoursPt: varchar('hours_pt', { length: 160 }).notNull(),
+  hoursEn: varchar('hours_en', { length: 160 }).notNull(),
+  linkedin: varchar('linkedin', { length: 300 }).notNull().default(''),
+  instagram: varchar('instagram', { length: 300 }).notNull().default(''),
+  facebook: varchar('facebook', { length: 300 }).notNull().default(''),
   /** imagem do hero da página inicial */
-  coverImage: text('cover_image').notNull(),
-  coverAltPt: text('cover_alt_pt').notNull().default(''),
-  coverAltEn: text('cover_alt_en').notNull().default(''),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  coverImage: varchar('cover_image', { length: 400 }).notNull(),
+  coverAltPt: text('cover_alt_pt').notNull(),
+  coverAltEn: text('cover_alt_en').notNull(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
 /**
  * Textos das páginas, um registo por idioma e por página.
- * O `data` segue o mesmo formato do dicionário estático — o tipo `Content`
- * continua a ser a fonte de verdade da forma do conteúdo.
+ * O `data` segue o formato do tipo `Content`, que continua a ser a fonte de
+ * verdade da forma do conteúdo.
  */
-export const pageContent = pgTable(
+export const pageContent = mysqlTable(
   'page_content',
   {
-    locale: text('locale', { enum: ['pt', 'en'] }).notNull(),
-    page: text('page', { enum: ['meta', 'nav', 'common', 'home', 'about', 'method', 'projects', 'contact', 'footer'] }).notNull(),
-    data: jsonb('data').notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    locale: varchar('locale', { length: 5 }).notNull().$type<'pt' | 'en'>(),
+    page: varchar('page', { length: 32 }).notNull(),
+    data: json('data').notNull(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.locale, table.page] })],
 );
 
-export const services = pgTable(
+export const services = mysqlTable(
   'services',
   {
-    id: uuid('id').defaultRandom().primaryKey(),
-    slug: text('slug').notNull(),
+    id: char('id', { length: 36 }).primaryKey(),
+    slug: varchar('slug', { length: 120 }).notNull(),
     /** número mostrado no site (01, 02, ...) — separado da ordenação */
-    number: text('number').notNull(),
-    position: integer('position').notNull().default(0),
+    number: varchar('number', { length: 8 }).notNull(),
+    position: int('position').notNull().default(0),
     published: boolean('published').notNull().default(true),
-    image: text('image'),
-    imageAltPt: text('image_alt_pt').notNull().default(''),
-    imageAltEn: text('image_alt_en').notNull().default(''),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    image: varchar('image', { length: 400 }),
+    imageAltPt: text('image_alt_pt').notNull(),
+    imageAltEn: text('image_alt_en').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => [uniqueIndex('services_slug_unique').on(table.slug)],
 );
 
-export const serviceTranslations = pgTable(
+export const serviceTranslations = mysqlTable(
   'service_translations',
   {
-    serviceId: uuid('service_id')
-      .notNull()
-      .references(() => services.id, { onDelete: 'cascade' }),
-    locale: text('locale', { enum: ['pt', 'en'] }).notNull(),
-    title: text('title').notNull(),
+    serviceId: char('service_id', { length: 36 }).notNull(),
+    locale: varchar('locale', { length: 5 }).notNull().$type<'pt' | 'en'>(),
+    title: varchar('title', { length: 200 }).notNull(),
     short: text('short').notNull(),
     lead: text('lead').notNull(),
     /** parágrafos */
-    body: jsonb('body').notNull().$type<string[]>(),
+    body: json('body').notNull().$type<string[]>(),
     /** [{ title, text }] */
-    points: jsonb('points').notNull().$type<{ title: string; text: string }[]>(),
-    keywords: jsonb('keywords').notNull().$type<string[]>(),
+    points: json('points').notNull().$type<{ title: string; text: string }[]>(),
+    keywords: json('keywords').notNull().$type<string[]>(),
   },
   (table) => [primaryKey({ columns: [table.serviceId, table.locale] })],
 );
 
-export const projects = pgTable(
+export const projects = mysqlTable(
   'projects',
   {
-    id: uuid('id').defaultRandom().primaryKey(),
-    slug: text('slug').notNull(),
-    position: integer('position').notNull().default(0),
+    id: char('id', { length: 36 }).primaryKey(),
+    slug: varchar('slug', { length: 120 }).notNull(),
+    position: int('position').notNull().default(0),
     published: boolean('published').notNull().default(true),
-    year: text('year').notNull().default(''),
-    client: text('client').notNull().default(''),
-    location: text('location').notNull().default(''),
-    coverImage: text('cover_image'),
+    year: varchar('year', { length: 16 }).notNull().default(''),
+    client: varchar('client', { length: 200 }).notNull().default(''),
+    location: varchar('location', { length: 200 }).notNull().default(''),
+    coverImage: varchar('cover_image', { length: 400 }),
     /** galeria: [{ url, altPt, altEn }] */
-    gallery: jsonb('gallery').notNull().default([]).$type<{ url: string; altPt: string; altEn: string }[]>(),
+    gallery: json('gallery').notNull().$type<{ url: string; altPt: string; altEn: string }[]>(),
     /** serviços envolvidos, por slug */
-    serviceSlugs: jsonb('service_slugs').notNull().default([]).$type<string[]>(),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    serviceSlugs: json('service_slugs').notNull().$type<string[]>(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => [uniqueIndex('projects_slug_unique').on(table.slug)],
 );
 
-export const projectTranslations = pgTable(
+export const projectTranslations = mysqlTable(
   'project_translations',
   {
-    projectId: uuid('project_id')
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
-    locale: text('locale', { enum: ['pt', 'en'] }).notNull(),
-    title: text('title').notNull(),
-    summary: text('summary').notNull().default(''),
-    body: jsonb('body').notNull().default([]).$type<string[]>(),
+    projectId: char('project_id', { length: 36 }).notNull(),
+    locale: varchar('locale', { length: 5 }).notNull().$type<'pt' | 'en'>(),
+    title: varchar('title', { length: 200 }).notNull(),
+    summary: text('summary').notNull(),
+    body: json('body').notNull().$type<string[]>(),
   },
   (table) => [primaryKey({ columns: [table.projectId, table.locale] })],
 );
@@ -166,22 +166,22 @@ export const projectTranslations = pgTable(
    Mensagens do formulário
    ========================================================================== */
 
-export const messages = pgTable(
+export const messages = mysqlTable(
   'messages',
   {
-    id: uuid('id').defaultRandom().primaryKey(),
-    name: text('name').notNull(),
-    email: text('email').notNull(),
-    phone: text('phone').notNull().default(''),
-    subject: text('subject').notNull().default(''),
+    id: char('id', { length: 36 }).primaryKey(),
+    name: varchar('name', { length: 160 }).notNull(),
+    email: varchar('email', { length: 200 }).notNull(),
+    phone: varchar('phone', { length: 60 }).notNull().default(''),
+    subject: varchar('subject', { length: 200 }).notNull().default(''),
     body: text('body').notNull(),
-    locale: text('locale').notNull().default('pt'),
+    locale: varchar('locale', { length: 5 }).notNull().default('pt'),
     /** null enquanto não for lida */
-    readAt: timestamp('read_at', { withTimezone: true }),
-    archivedAt: timestamp('archived_at', { withTimezone: true }),
-    /** false quando o envio de email falhou — a mensagem fica na mesma guardada */
+    readAt: timestamp('read_at'),
+    archivedAt: timestamp('archived_at'),
+    /** false quando o envio de email falhou — a mensagem fica guardada na mesma */
     emailed: boolean('emailed').notNull().default(false),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [index('messages_created_idx').on(table.createdAt)],
 );
@@ -190,16 +190,17 @@ export const messages = pgTable(
    Biblioteca de imagens
    ========================================================================== */
 
-export const media = pgTable('media', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  url: text('url').notNull(),
-  /** caminho dentro do bucket, necessário para apagar */
-  storagePath: text('storage_path').notNull(),
-  filename: text('filename').notNull(),
-  mimeType: text('mime_type').notNull(),
-  bytes: integer('bytes').notNull(),
-  width: integer('width'),
-  height: integer('height'),
-  uploadedBy: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+export const media = mysqlTable('media', {
+  id: char('id', { length: 36 }).primaryKey(),
+  /** caminho público servido pela aplicação, ex. /uploads/obra-a1b2c3.jpg */
+  url: varchar('url', { length: 400 }).notNull(),
+  /** nome do ficheiro dentro da pasta de uploads, necessário para apagar */
+  storagePath: varchar('storage_path', { length: 300 }).notNull(),
+  filename: varchar('filename', { length: 300 }).notNull(),
+  mimeType: varchar('mime_type', { length: 100 }).notNull(),
+  bytes: int('bytes').notNull(),
+  width: int('width'),
+  height: int('height'),
+  uploadedBy: char('uploaded_by', { length: 36 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });

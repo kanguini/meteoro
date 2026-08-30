@@ -7,6 +7,7 @@ import { services, serviceTranslations } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
 import { revalidateSite } from '@/lib/revalidate';
 import { slugify } from '@/lib/slug';
+import { newId } from '@/lib/id';
 import { locales } from '@/i18n/config';
 import type { ActionState } from '../ui';
 
@@ -84,8 +85,9 @@ export async function saveService(_previous: ActionState, formData: FormData): P
     if (id) {
       await db.update(services).set(base).where(eq(services.id, id));
     } else {
-      const [row] = await db.insert(services).values(base).returning({ id: services.id });
-      serviceId = row.id;
+      // O identificador é gerado antes de inserir: o MySQL não devolve a chave.
+      serviceId = newId();
+      await db.insert(services).values({ ...base, id: serviceId });
     }
 
     for (const locale of locales) {
@@ -100,13 +102,7 @@ export async function saveService(_previous: ActionState, formData: FormData): P
         keywords: lines(formData, `${locale}.keywords`),
       };
 
-      await db
-        .insert(serviceTranslations)
-        .values(translation)
-        .onConflictDoUpdate({
-          target: [serviceTranslations.serviceId, serviceTranslations.locale],
-          set: translation,
-        });
+      await db.insert(serviceTranslations).values(translation).onDuplicateKeyUpdate({ set: translation });
     }
   } catch (error) {
     console.error('[admin] falha a guardar serviço', error);

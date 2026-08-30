@@ -6,6 +6,7 @@ import { db } from '@/db';
 import { media } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
 import { deleteImage, uploadImage } from '@/lib/storage';
+import { newId } from '@/lib/id';
 import type { ActionState } from '../ui';
 
 export async function uploadMedia(_previous: ActionState, formData: FormData): Promise<ActionState> {
@@ -28,6 +29,7 @@ export async function uploadMedia(_previous: ActionState, formData: FormData): P
     }
 
     await db.insert(media).values({
+      id: newId(),
       url: result.url,
       storagePath: result.path,
       filename: file.name,

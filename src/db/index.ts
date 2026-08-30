@@ -1,12 +1,14 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { drizzle, type MySql2Database } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
 import * as schema from './schema';
 
-type Database = ReturnType<typeof drizzle<typeof schema>>;
+// O tipo é declarado à mão: o mysql2 exporta dois `Pool` diferentes (callback e
+// promise) e inferir do `drizzle()` faz o TypeScript escolher o errado.
+type Database = MySql2Database<typeof schema>;
 
 declare global {
   // eslint-disable-next-line no-var
-  var __meteoroSql: ReturnType<typeof postgres> | undefined;
+  var __meteoroPool: mysql.Pool | undefined;
 }
 
 let instance: Database | undefined;
@@ -27,18 +29,20 @@ function getDb(): Database {
   }
 
   // Em dev o hot reload recria os módulos; sem isto abríamos ligações a cada save.
-  const sql =
-    globalThis.__meteoroSql ??
-    postgres(url, {
-      max: 5,
-      idle_timeout: 20,
-      // O pooler do Supabase (pgbouncer) não suporta prepared statements.
-      prepare: false,
+  const pool =
+    globalThis.__meteoroPool ??
+    mysql.createPool({
+      uri: url,
+      connectionLimit: 5,
+      // O MySQL devolve DATETIME como string se não for isto; o Drizzle espera Date.
+      timezone: 'Z',
+      // O painel guarda estruturas em colunas JSON: sem isto vinham como string.
+      supportBigNumbers: true,
     });
 
-  if (process.env.NODE_ENV !== 'production') globalThis.__meteoroSql = sql;
+  if (process.env.NODE_ENV !== 'production') globalThis.__meteoroPool = pool;
 
-  instance = drizzle(sql, { schema });
+  instance = drizzle(pool, { schema, mode: 'default' });
   return instance;
 }
 

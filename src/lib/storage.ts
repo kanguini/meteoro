@@ -1,12 +1,18 @@
+import { randomBytes } from 'node:crypto';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
+import path from 'node:path';
+
 /**
- * Upload de imagens para o Supabase Storage, pela API REST.
+ * Imagens guardadas em disco, no próprio alojamento.
  *
- * Sem SDK de propósito: é um POST e um DELETE, e menos uma dependência para
- * manter. Precisa de três variáveis de ambiente:
+ * A pasta tem de estar FORA do projecto, senão cada deploy apaga tudo o que foi
+ * carregado. Define-se em UPLOAD_DIR, por exemplo:
  *
- *   SUPABASE_URL          https://xxxx.supabase.co
- *   SUPABASE_SERVICE_KEY  chave "service_role" (só no servidor, nunca no cliente)
- *   SUPABASE_BUCKET       nome do bucket público (por omissão "meteoro")
+ *   UPLOAD_DIR=/home/u701515205/uploads
+ *
+ * Sem a variável usa-se ~/uploads em produção e ./uploads em desenvolvimento.
+ * Os ficheiros são servidos pela rota /uploads/[...caminho].
  */
 
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -18,19 +24,19 @@ const ALLOWED = new Map([
   ['image/avif', 'avif'],
 ]);
 
+export const UPLOAD_DIR = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : process.env.NODE_ENV === 'production'
+    ? path.join(homedir(), 'uploads')
+    : path.join(process.cwd(), 'uploads');
+
 export type UploadResult =
   | { ok: true; url: string; path: string; bytes: number; mimeType: string }
   | { ok: false; error: string };
 
-function config() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
-  const bucket = process.env.SUPABASE_BUCKET ?? 'meteoro';
-  return url && key ? { url: url.replace(/\/$/, ''), key, bucket } : null;
-}
-
+/** O armazenamento local está sempre disponível — não depende de serviço externo. */
 export function storageConfigured(): boolean {
-  return config() !== null;
+  return true;
 }
 
 /** Nome sem acentos nem espaços, com sufixo aleatório para não haver colisões. */
@@ -44,16 +50,10 @@ function safeName(filename: string, extension: string): string {
     .replace(/^-+|-+$/g, '')
     .slice(0, 60);
 
-  const suffix = Math.random().toString(36).slice(2, 8);
-  return `${base || 'imagem'}-${suffix}.${extension}`;
+  return `${base || 'imagem'}-${randomBytes(4).toString('hex')}.${extension}`;
 }
 
 export async function uploadImage(file: File): Promise<UploadResult> {
-  const settings = config();
-  if (!settings) {
-    return { ok: false, error: 'O armazenamento de imagens não está configurado (SUPABASE_URL e SUPABASE_SERVICE_KEY).' };
-  }
-
   const extension = ALLOWED.get(file.type);
   if (!extension) {
     return { ok: false, error: 'Formato não aceite. Use JPG, PNG, WebP ou AVIF.' };
@@ -63,50 +63,34 @@ export async function uploadImage(file: File): Promise<UploadResult> {
     return { ok: false, error: `A imagem tem ${(file.size / 1024 / 1024).toFixed(1)} MB. O limite é 8 MB.` };
   }
 
-  const path = safeName(file.name, extension);
-  const endpoint = `${settings.url}/storage/v1/object/${settings.bucket}/${path}`;
+  const name = safeName(file.name, extension);
 
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${settings.key}`,
-        'Content-Type': file.type,
-        'x-upsert': 'false',
-      },
-      body: await file.arrayBuffer(),
-    });
-
-    if (!response.ok) {
-      console.error('[storage] upload falhou', response.status, await response.text());
-      return { ok: false, error: 'O servidor de imagens recusou o ficheiro.' };
-    }
+    await mkdir(UPLOAD_DIR, { recursive: true });
+    await writeFile(path.join(UPLOAD_DIR, name), Buffer.from(await file.arrayBuffer()));
 
     return {
       ok: true,
-      url: `${settings.url}/storage/v1/object/public/${settings.bucket}/${path}`,
-      path,
+      url: `/uploads/${name}`,
+      path: name,
       bytes: file.size,
       mimeType: file.type,
     };
   } catch (error) {
-    console.error('[storage] erro de rede no upload', error);
-    return { ok: false, error: 'Não foi possível contactar o servidor de imagens.' };
+    console.error('[storage] falha a gravar a imagem em', UPLOAD_DIR, error);
+    return { ok: false, error: 'Não foi possível gravar o ficheiro no servidor.' };
   }
 }
 
-export async function deleteImage(path: string): Promise<boolean> {
-  const settings = config();
-  if (!settings) return false;
+export async function deleteImage(storagePath: string): Promise<boolean> {
+  // Só o nome do ficheiro: impede que um valor manipulado apague algo fora da pasta.
+  const name = path.basename(storagePath);
 
   try {
-    const response = await fetch(`${settings.url}/storage/v1/object/${settings.bucket}/${path}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${settings.key}` },
-    });
-    return response.ok;
+    await unlink(path.join(UPLOAD_DIR, name));
+    return true;
   } catch (error) {
-    console.error('[storage] erro ao apagar', error);
+    console.error('[storage] falha a apagar', name, error);
     return false;
   }
 }

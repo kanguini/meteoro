@@ -45,7 +45,7 @@ export async function saveSettings(_previous: ActionState, formData: FormData): 
   };
 
   try {
-    await db.insert(settings).values(values).onConflictDoUpdate({ target: settings.id, set: values });
+    await db.insert(settings).values(values).onDuplicateKeyUpdate({ set: values });
   } catch (error) {
     console.error('[admin] falha a guardar definições', error);
     return { error: 'Não foi possível guardar. Tente novamente.' };

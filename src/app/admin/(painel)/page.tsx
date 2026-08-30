@@ -3,7 +3,7 @@ import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { db } from '@/db';
 import { media, messages, projects, services, settings } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
-import { storageConfigured } from '@/lib/storage';
+import { mailerConfigured } from '@/lib/mailer';
 import { AdminHead, Empty, Panel } from './ui';
 
 export const dynamic = 'force-dynamic';
@@ -32,8 +32,7 @@ export default async function ResumoPage() {
 
   const warnings: string[] = [];
   if (!config) warnings.push('As definições ainda não foram gravadas — o site está a servir os contactos do código.');
-  if (!storageConfigured()) warnings.push('O armazenamento de imagens não está configurado, por isso não é possível carregar fotografias.');
-  if (!process.env.RESEND_API_KEY) warnings.push('O envio de email não está configurado: as mensagens ficam guardadas no painel mas ninguém é avisado por email.');
+  if (!mailerConfigured()) warnings.push('O envio de email não está configurado: as mensagens ficam guardadas no painel mas ninguém é avisado por email.');
 
   return (
     <>

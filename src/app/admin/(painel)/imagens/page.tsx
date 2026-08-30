@@ -2,7 +2,7 @@ import { desc } from 'drizzle-orm';
 import { db } from '@/db';
 import { media } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
-import { storageConfigured } from '@/lib/storage';
+import { UPLOAD_DIR } from '@/lib/storage';
 import { AdminHead, Empty, Panel } from '../ui';
 import { UploadForm } from './UploadForm';
 import { removeMedia } from './actions';
@@ -19,7 +19,6 @@ export default async function ImagensPage() {
   await requireUser();
 
   const items = await db.select().from(media).orderBy(desc(media.createdAt));
-  const configured = storageConfigured();
 
   return (
     <>
@@ -28,15 +27,12 @@ export default async function ImagensPage() {
         description="As imagens carregadas aqui ficam disponíveis para a capa, os serviços e as obras."
       />
 
-      {!configured && (
-        <p className="adm-note adm-note--warn" style={{ marginBottom: '1.25rem' }}>
-          O armazenamento de imagens ainda não está configurado. Defina SUPABASE_URL, SUPABASE_SERVICE_KEY e
-          SUPABASE_BUCKET para poder carregar ficheiros. As imagens que já estão em /images continuam a funcionar.
-        </p>
-      )}
-
       <Panel title="Carregar">
-        <UploadForm disabled={!configured} />
+        <UploadForm disabled={false} />
+        <p className="adm-field__hint" style={{ marginTop: '0.75rem' }}>
+          Guardadas em <code>{UPLOAD_DIR}</code>. A pasta fica fora do projecto para as imagens sobreviverem aos
+          deploys.
+        </p>
       </Panel>
 
       <Panel title={`Biblioteca (${items.length})`}>

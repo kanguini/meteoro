@@ -12,6 +12,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../src/db';
 import { users } from '../src/db/schema';
 import { hashPassword, validatePassword } from '../src/lib/auth/password';
+import { newId } from '../src/lib/id';
 
 const CTRL_C = '\u0003';
 const BACKSPACE = '\u007f';
@@ -97,7 +98,7 @@ async function main() {
     await db.update(users).set({ passwordHash, name, role, active: true }).where(eq(users.email, email));
     console.log(`Password de ${email} actualizada.`);
   } else {
-    await db.insert(users).values({ email, name, role, passwordHash });
+    await db.insert(users).values({ id: newId(), email, name, role, passwordHash });
     console.log(`Utilizador ${email} criado como ${role}.`);
   }
 

@@ -79,8 +79,11 @@ rota de API deixa de funcionar.
 
 ## Painel de administração
 
-O conteúdo do site é editável em `/admin`. Serve-se de Postgres (Supabase) e, se
-a base de dados não estiver configurada ou estiver em baixo, o site **serve o
+O conteúdo do site é editável em `/admin`. **Corre inteiramente na Hostinger** —
+MySQL do próprio alojamento, imagens numa pasta do servidor e email pelo SMTP da
+Hostinger. Não depende de nenhum serviço externo.
+
+Se a base de dados não estiver configurada ou estiver em baixo, o site **serve o
 conteúdo estático** de `src/i18n/pt.ts` e `en.ts` em vez de rebentar. É por isso
 que o `next build` corre sem `DATABASE_URL`.
 
@@ -99,7 +102,7 @@ que o `next build` corre sem `DATABASE_URL`.
 ### Arranque
 
 ```bash
-cp .env.example .env.local     # preencher DATABASE_URL e as chaves do Supabase
+cp .env.example .env.local     # preencher DATABASE_URL, UPLOAD_DIR e o SMTP
 npm run db:push                # cria as tabelas
 npm run db:seed                # carrega o conteúdo actual do site para a base de dados
 npm run admin:create -- --email pessoa@empresa.ao --nome "Nome" --papel owner
@@ -108,8 +111,18 @@ npm run admin:create -- --email pessoa@empresa.ao --nome "Nome" --papel owner
 O `db:seed` é idempotente e não pisa conteúdo já editado. Para repor os textos
 originais de raiz: `npm run db:seed -- --force`.
 
+### A pasta das imagens
+
+`UPLOAD_DIR` **tem de apontar para fora da pasta do projecto** — por exemplo
+`/home/uXXXXXXXXX/uploads`. Dentro do projecto, cada deploy apagaria tudo o que
+tivesse sido carregado. Os ficheiros são servidos pela rota `/uploads/[...path]`,
+porque o Next só serve estaticamente o que está em `public/`.
+
 ### Notas de implementação
 
+- **MySQL, não Postgres.** Duas consequências em todo o código: não há
+  `.returning()` (as chaves são geradas na aplicação, em `src/lib/id.ts`) e o
+  `onConflictDoUpdate` do Postgres é `onDuplicateKeyUpdate`.
 - **Passwords** com `scrypt` do próprio Node. Nada de bcrypt ou argon2: exigem
   compilação nativa, e o ambiente de build da Hostinger já mostrou que não a
   suporta (ver a nota do Turbopack acima).

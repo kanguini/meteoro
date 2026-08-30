@@ -14,6 +14,7 @@ import { pageContent, services, serviceTranslations, settings } from '../src/db/
 import { pt } from '../src/i18n/pt';
 import { en } from '../src/i18n/en';
 import { site } from '../src/lib/site';
+import { newId } from '../src/lib/id';
 
 const force = process.argv.includes('--force');
 
@@ -45,7 +46,7 @@ async function seedSettings() {
     updatedAt: new Date(),
   };
 
-  await db.insert(settings).values(values).onConflictDoUpdate({ target: settings.id, set: values });
+  await db.insert(settings).values(values).onDuplicateKeyUpdate({ set: values });
   console.log('· definições carregadas');
 }
 
@@ -64,12 +65,11 @@ async function seedPages() {
       };
 
       if (force) {
-        await db
-          .insert(pageContent)
-          .values(row)
-          .onConflictDoUpdate({ target: [pageContent.locale, pageContent.page], set: row });
+        await db.insert(pageContent).values(row).onDuplicateKeyUpdate({ set: row });
       } else {
-        await db.insert(pageContent).values(row).onConflictDoNothing();
+        // MySQL não tem "do nothing"; reescrever a chave por si própria é o
+        // equivalente idiomático e deixa a linha existente intacta.
+        await db.insert(pageContent).values(row).onDuplicateKeyUpdate({ set: { locale: row.locale } });
       }
     }
 
@@ -93,9 +93,14 @@ async function seedServices() {
       continue;
     }
 
-    const [row] = await db
+    // O MySQL não devolve a chave inserida, por isso o identificador é gerado
+    // aqui e relido a seguir quando a linha já existia.
+    const serviceId = existing[0]?.id ?? newId();
+
+    await db
       .insert(services)
       .values({
+        id: serviceId,
         slug: service.slug,
         number: service.number,
         position: index,
@@ -104,8 +109,7 @@ async function seedServices() {
         imageAltPt: service.image?.alt ?? '',
         imageAltEn: englishService.image?.alt ?? '',
       })
-      .onConflictDoUpdate({
-        target: services.slug,
+      .onDuplicateKeyUpdate({
         set: {
           number: service.number,
           position: index,
@@ -114,15 +118,14 @@ async function seedServices() {
           imageAltEn: englishService.image?.alt ?? '',
           updatedAt: new Date(),
         },
-      })
-      .returning({ id: services.id });
+      });
 
     for (const [locale, source] of [
       ['pt', service],
       ['en', englishService],
     ] as const) {
       const translation = {
-        serviceId: row.id,
+        serviceId,
         locale,
         title: source.title,
         short: source.short,
@@ -132,13 +135,7 @@ async function seedServices() {
         keywords: source.keywords,
       };
 
-      await db
-        .insert(serviceTranslations)
-        .values(translation)
-        .onConflictDoUpdate({
-          target: [serviceTranslations.serviceId, serviceTranslations.locale],
-          set: translation,
-        });
+      await db.insert(serviceTranslations).values(translation).onDuplicateKeyUpdate({ set: translation });
     }
 
     console.log(`· serviço "${service.slug}" carregado`);

@@ -7,6 +7,7 @@ import { users } from '@/db/schema';
 import { requireOwner } from '@/lib/auth/guard';
 import { hashPassword, validatePassword } from '@/lib/auth/password';
 import { destroyAllSessions, getSessionUser } from '@/lib/auth/session';
+import { newId } from '@/lib/id';
 import type { ActionState } from '../ui';
 
 export async function createUser(_previous: ActionState, formData: FormData): Promise<ActionState> {
@@ -29,6 +30,7 @@ export async function createUser(_previous: ActionState, formData: FormData): Pr
   if (existing.length > 0) return { error: 'Já existe uma conta com esse email.' };
 
   await db.insert(users).values({
+    id: newId(),
     email,
     name,
     role: role === 'owner' ? 'owner' : 'editor',

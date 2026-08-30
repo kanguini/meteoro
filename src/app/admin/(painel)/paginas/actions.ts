@@ -42,10 +42,7 @@ export async function savePageContent(_previous: ActionState, formData: FormData
       const data = applyLeaves(base, entries);
 
       const row = { locale, page, data: data as never, updatedAt: new Date() };
-      await db
-        .insert(pageContent)
-        .values(row)
-        .onConflictDoUpdate({ target: [pageContent.locale, pageContent.page], set: row });
+      await db.insert(pageContent).values(row).onDuplicateKeyUpdate({ set: row });
     }
   } catch (error) {
     console.error('[admin] falha a guardar textos da página', error);

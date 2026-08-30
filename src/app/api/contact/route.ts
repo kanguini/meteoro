@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { db, hasDatabase } from '@/db';
 import { messages } from '@/db/schema';
 import { getSettings } from '@/lib/content';
+import { newId } from '@/lib/id';
+import { mailerConfigured, sendMail } from '@/lib/mailer';
 import { isLocale } from '@/i18n/config';
 
 /**
@@ -11,8 +13,7 @@ import { isLocale } from '@/i18n/config';
  * falhar, a mensagem continua no painel marcada como "email não enviado" — o
  * contacto do cliente nunca se perde por causa de uma chave de API em falta.
  *
- * Variáveis opcionais para o email:
- *   RESEND_API_KEY, CONTACT_FROM (remetente verificado), CONTACT_TO (destino)
+ * O email sai pelo SMTP da Hostinger — ver src/lib/mailer.ts.
  */
 export async function POST(request: Request) {
   let payload: Record<string, unknown>;
@@ -44,12 +45,10 @@ export async function POST(request: Request) {
 
   if (stored) {
     try {
-      const [row] = await db
-        .insert(messages)
-        .values({ name, email, phone, subject, body, locale })
-        .returning({ id: messages.id });
-      messageId = row.id;
+      messageId = newId();
+      await db.insert(messages).values({ id: messageId, name, email, phone, subject, body, locale });
     } catch (error) {
+      messageId = null;
       console.error('[contact] falha a gravar a mensagem', error);
       // Sem base de dados a funcionar, o email passa a ser a única via —
       // continuamos para o envio em vez de desistir.
@@ -83,9 +82,7 @@ async function sendNotification(data: {
   body: string;
   locale: 'pt' | 'en';
 }): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.CONTACT_FROM;
-  if (!apiKey || !from) return false;
+  if (!mailerConfigured()) return false;
 
   const settings = await getSettings(data.locale);
   const to = process.env.CONTACT_TO ?? settings.email;
@@ -99,27 +96,10 @@ async function sendNotification(data: {
     data.body,
   ].filter(Boolean);
 
-  try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        reply_to: data.email,
-        subject: `[Site] ${data.subject || 'Novo contacto'} — ${data.name}`,
-        text: lines.join('\n'),
-      }),
-    });
-
-    if (!response.ok) {
-      console.error('[contact] Resend respondeu', response.status, await response.text());
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('[contact] falha de rede ao enviar', error);
-    return false;
-  }
+  return sendMail({
+    to,
+    replyTo: data.email,
+    subject: `[Site] ${data.subject || 'Novo contacto'} — ${data.name}`,
+    text: lines.join('\n'),
+  });
 }
