@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `cover_poster` varchar(400) DEFAULT '' NOT NULL;

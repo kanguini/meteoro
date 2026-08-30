@@ -27,6 +27,7 @@ export default async function DefinicoesPage() {
     instagram: site.social.instagram,
     facebook: site.social.facebook,
     coverImage: '/images/hero-obra.jpg',
+    coverPoster: '',
     coverAltPt: '',
     coverAltEn: '',
   };

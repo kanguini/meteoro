@@ -15,14 +15,20 @@ import path from 'node:path';
  * Os ficheiros são servidos pela rota /uploads/[...caminho].
  */
 
-const MAX_BYTES = 8 * 1024 * 1024;
+/** Vídeo tem limite maior: uma capa em movimento não cabe em 8 MB. */
+const MAX_BYTES = { image: 8 * 1024 * 1024, video: 40 * 1024 * 1024 } as const;
 
-const ALLOWED = new Map([
-  ['image/jpeg', 'jpg'],
-  ['image/png', 'png'],
-  ['image/webp', 'webp'],
-  ['image/avif', 'avif'],
+const ALLOWED = new Map<string, { extension: string; kind: 'image' | 'video' }>([
+  ['image/jpeg', { extension: 'jpg', kind: 'image' }],
+  ['image/png', { extension: 'png', kind: 'image' }],
+  ['image/webp', { extension: 'webp', kind: 'image' }],
+  ['image/avif', { extension: 'avif', kind: 'image' }],
+  ['video/mp4', { extension: 'mp4', kind: 'video' }],
+  ['video/webm', { extension: 'webm', kind: 'video' }],
+  ['video/quicktime', { extension: 'mov', kind: 'video' }],
 ]);
+
+export const ACCEPT_ATTRIBUTE = [...ALLOWED.keys()].join(',');
 
 export const UPLOAD_DIR = process.env.UPLOAD_DIR
   ? path.resolve(process.env.UPLOAD_DIR)
@@ -54,16 +60,19 @@ function safeName(filename: string, extension: string): string {
 }
 
 export async function uploadImage(file: File): Promise<UploadResult> {
-  const extension = ALLOWED.get(file.type);
-  if (!extension) {
-    return { ok: false, error: 'Formato não aceite. Use JPG, PNG, WebP ou AVIF.' };
+  const allowed = ALLOWED.get(file.type);
+  if (!allowed) {
+    return { ok: false, error: 'Formato não aceite. Use JPG, PNG, WebP, AVIF, MP4, WebM ou MOV.' };
   }
 
-  if (file.size > MAX_BYTES) {
-    return { ok: false, error: `A imagem tem ${(file.size / 1024 / 1024).toFixed(1)} MB. O limite é 8 MB.` };
+  const limit = MAX_BYTES[allowed.kind];
+  if (file.size > limit) {
+    const size = (file.size / 1024 / 1024).toFixed(1);
+    const max = limit / 1024 / 1024;
+    return { ok: false, error: `O ficheiro tem ${size} MB. O limite é ${max} MB.` };
   }
 
-  const name = safeName(file.name, extension);
+  const name = safeName(file.name, allowed.extension);
 
   try {
     await mkdir(UPLOAD_DIR, { recursive: true });

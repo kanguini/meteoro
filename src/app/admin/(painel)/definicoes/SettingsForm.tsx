@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { Field, Panel, TextArea, type ActionState } from '../ui';
 import { SaveBar } from '../SaveBar';
-import { ImagePicker } from '../ImagePicker';
+import { MediaPicker } from '../MediaPicker';
 import { saveSettings } from './actions';
 
 type Current = {
@@ -18,6 +18,7 @@ type Current = {
   instagram: string;
   facebook: string;
   coverImage: string;
+  coverPoster: string;
   coverAltPt: string;
   coverAltEn: string;
 };
@@ -53,14 +54,27 @@ export function SettingsForm({
         />
       </Panel>
 
-      <Panel title="Imagem de capa">
-        <ImagePicker
+      <Panel title="Capa da página inicial">
+        <MediaPicker
           name="coverImage"
-          label="Fotografia do topo da página inicial"
+          label="Fotografia ou vídeo do topo"
           defaultValue={current.coverImage}
           library={library}
+          allowVideo
+          hint="Carregue do computador, escolha da biblioteca ou cole um endereço. Vídeo em MP4, WebM ou MOV até 40 MB — toca sozinho, sem som e em ciclo."
         />
-        <div className="admin-grid admin-grid--2" style={{ marginTop: '1rem' }}>
+
+        <div style={{ marginTop: '1.25rem' }}>
+          <MediaPicker
+            name="coverPoster"
+            label="Imagem de recurso do vídeo"
+            defaultValue={current.coverPoster}
+            library={library}
+            hint="Só usada quando a capa é vídeo: aparece enquanto ele carrega e fica no lugar dele em telemóveis que não o deixam tocar sozinho."
+          />
+        </div>
+
+        <div className="admin-grid admin-grid--2" style={{ marginTop: '1.25rem' }}>
           <TextArea
             label="Descrição da imagem (PT)"
             name="coverAltPt"

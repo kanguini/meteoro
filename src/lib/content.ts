@@ -16,6 +16,7 @@ export type Settings = {
   hours: string;
   social: { linkedin: string; instagram: string; facebook: string };
   coverImage: string;
+  coverPoster: string;
   coverAlt: string;
 };
 
@@ -48,6 +49,7 @@ function staticSettings(locale: Locale): Settings {
     hours: staticSite.hours[locale],
     social: { ...staticSite.social },
     coverImage: '/images/hero-obra.jpg',
+    coverPoster: '',
     coverAlt: '',
   };
 }
@@ -84,6 +86,7 @@ export async function getSettings(locale: Locale): Promise<Settings> {
         hours: locale === 'pt' ? row.hoursPt : row.hoursEn,
         social: { linkedin: row.linkedin, instagram: row.instagram, facebook: row.facebook },
         coverImage: row.coverImage,
+        coverPoster: row.coverPoster,
         coverAlt: locale === 'pt' ? row.coverAltPt : row.coverAltEn,
       };
     },

@@ -8,6 +8,13 @@
       "when": 1788115404341,
       "tag": "0000_smart_prima",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1788126740940,
+      "tag": "0001_chunky_cloak",
+      "breakpoints": true
     }
   ]
 }

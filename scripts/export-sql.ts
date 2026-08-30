@@ -52,11 +52,34 @@ async function schemaSql(): Promise<string> {
         .filter(Boolean)
         // Torna a instalação repetível sem erro se as tabelas já existirem.
         .map((statement) => statement.replace(/^CREATE TABLE /, 'CREATE TABLE IF NOT EXISTS '))
+        .map(guardAddColumn)
         .join('\n\n'),
     );
   }
 
   return parts.join('\n\n');
+}
+
+/**
+ * O MySQL não tem `ADD COLUMN IF NOT EXISTS` (só o MariaDB), por isso um
+ * `ALTER TABLE ... ADD` falharia na segunda passagem. Envolve-se cada um numa
+ * verificação ao information_schema para o instalador continuar repetível.
+ */
+function guardAddColumn(statement: string): string {
+  const match = /^ALTER TABLE `([^`]+)` ADD `([^`]+)`/.exec(statement);
+  if (!match) return statement;
+
+  const [, table, column] = match;
+  const inline = statement.replace(/;\s*$/, '').replace(/'/g, "\\'");
+
+  return [
+    `SET @col := (SELECT COUNT(*) FROM information_schema.COLUMNS`,
+    `  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '${table}' AND COLUMN_NAME = '${column}');`,
+    `SET @ddl := IF(@col = 0, '${inline}', 'DO 0');`,
+    'PREPARE alterStatement FROM @ddl;',
+    'EXECUTE alterStatement;',
+    'DEALLOCATE PREPARE alterStatement;',
+  ].join('\n');
 }
 
 function dataSql(): string {

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { isExternal, isVideo } from '@/lib/media';
 import Link from 'next/link';
 import { Reveal } from './Reveal';
 import { ArrowRight } from './Icons';
@@ -11,6 +12,7 @@ export function ImageHero({
   statement,
   lead,
   image,
+  poster,
   imagePosition,
   actions,
   meta,
@@ -22,6 +24,8 @@ export function ImageHero({
   statement?: React.ReactNode;
   lead?: string;
   image: { src: string; alt: string };
+  /** imagem mostrada enquanto o vídeo carrega e quando ele não pode tocar */
+  poster?: string;
   /** `object-position` da fotografia, para afastar o motivo principal do texto */
   imagePosition?: string;
   actions?: React.ReactNode;
@@ -31,14 +35,38 @@ export function ImageHero({
   return (
     <section className={['hero', large ? '' : 'hero--page'].join(' ')}>
       <div className="hero__media">
-        <Image
-          src={image.src}
-          alt={image.alt}
-          fill
-          priority
-          sizes="100vw"
-          style={{ objectFit: 'cover', objectPosition: imagePosition ?? 'center' }}
-        />
+        {isVideo(image.src) ? (
+          /*
+            Vídeo de fundo: sem som, em ciclo e sem controlos. O `playsInline` é
+            o que impede o iOS de o abrir em ecrã inteiro. O `poster` aparece
+            enquanto carrega e fica quando o browser recusa tocar sozinho — é o
+            caso de quem tem "reduzir movimento" ligado ou está a poupar dados.
+          */
+          <video
+            className="hero__video"
+            src={image.src}
+            poster={poster || undefined}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label={image.alt || undefined}
+            style={{ objectPosition: imagePosition ?? 'center' }}
+          />
+        ) : (
+          <Image
+            src={image.src}
+            alt={image.alt}
+            fill
+            priority
+            sizes="100vw"
+            // Endereços externos não passam pelo optimizador: evita ter de
+            // autorizar domínios um a um e de servir de proxy a terceiros.
+            unoptimized={isExternal(image.src)}
+            style={{ objectFit: 'cover', objectPosition: imagePosition ?? 'center' }}
+          />
+        )}
       </div>
       <div className="hero__scrim" />
       <div className="container hero__inner">

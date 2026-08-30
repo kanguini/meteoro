@@ -71,8 +71,10 @@ export const settings = mysqlTable('settings', {
   linkedin: varchar('linkedin', { length: 300 }).notNull().default(''),
   instagram: varchar('instagram', { length: 300 }).notNull().default(''),
   facebook: varchar('facebook', { length: 300 }).notNull().default(''),
-  /** imagem do hero da página inicial */
+  /** imagem OU vídeo do hero da página inicial */
   coverImage: varchar('cover_image', { length: 400 }).notNull(),
+  /** usada quando a capa é vídeo: primeira imagem e recurso se ele não tocar */
+  coverPoster: varchar('cover_poster', { length: 400 }).notNull().default(''),
   coverAltPt: text('cover_alt_pt').notNull(),
   coverAltEn: text('cover_alt_en').notNull(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

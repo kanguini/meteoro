@@ -39,6 +39,7 @@ export async function saveSettings(_previous: ActionState, formData: FormData): 
     instagram: text(formData, 'instagram'),
     facebook: text(formData, 'facebook'),
     coverImage,
+    coverPoster: text(formData, 'coverPoster'),
     coverAltPt: text(formData, 'coverAltPt'),
     coverAltEn: text(formData, 'coverAltEn'),
     updatedAt: new Date(),

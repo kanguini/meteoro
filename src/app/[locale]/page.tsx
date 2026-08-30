@@ -32,6 +32,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           src: settings.coverImage,
           alt: settings.coverAlt || content.services.items[2]?.image?.alt || '',
         }}
+        poster={settings.coverPoster}
         meta={[`${site.name} · ${site.descriptor[locale]}`, `${content.footer.country} · ${site.founded}`]}
         actions={
           <>

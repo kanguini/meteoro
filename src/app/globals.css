@@ -821,6 +821,15 @@ textarea {
   animation: heroZoom 12s var(--ease) forwards;
 }
 
+/* Vídeo de capa: preenche o hero como a fotografia, sem o zoom lento. */
+.hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 @keyframes heroZoom {
   to {
     transform: scale(1);
