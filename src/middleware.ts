@@ -11,7 +11,8 @@ import { SESSION_COOKIE } from '@/lib/auth/cookie';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (!pathname.startsWith('/admin') || pathname === '/admin/login') {
+  // O arranque tem de ser alcançável sem sessão — é onde a primeira conta nasce.
+  if (!pathname.startsWith('/admin') || pathname === '/admin/login' || pathname === '/admin/setup') {
     return NextResponse.next();
   }
 
