@@ -256,7 +256,7 @@
 .adm-select:focus {
   outline: none;
   border-color: var(--admin-red);
-  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.28);
 }
 
 .adm-textarea {

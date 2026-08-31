@@ -5,6 +5,7 @@ import { db } from '@/db';
 import { pageContent } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
 import { getContent } from '@/i18n';
+import { deepMerge } from '@/lib/deep-merge';
 import { flatten } from '@/lib/json-form';
 import { AdminHead } from '../../ui';
 import { CONTENT_PAGES, isContentPage } from '../pages';
@@ -19,8 +20,11 @@ async function loadData(locale: 'pt' | 'en', page: string): Promise<unknown> {
     .where(and(eq(pageContent.locale, locale), eq(pageContent.page, page as never)))
     .limit(1);
 
-  if (row) return row.data;
-  return (getContent(locale) as unknown as Record<string, unknown>)[page];
+  // O estático é a base: um campo novo do tipo Content aparece no editor mesmo
+  // que o snapshot gravado (anterior a esse campo) não o tenha.
+  const staticData = (getContent(locale) as unknown as Record<string, unknown>)[page];
+  if (row) return deepMerge(staticData, row.data);
+  return staticData;
 }
 
 export default async function EditarPaginaPage({ params }: { params: Promise<{ page: string }> }) {

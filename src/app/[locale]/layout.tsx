@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { alternatesFor } from '@/lib/routes';
 import { Archivo } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import '../globals.css';
@@ -39,10 +40,7 @@ export async function generateMetadata({
       template: content.meta.titleTemplate,
     },
     description: content.meta.defaultDescription,
-    alternates: {
-      canonical: `/${locale}`,
-      languages: Object.fromEntries(locales.map((code) => [code, `/${code}`])),
-    },
+    alternates: alternatesFor(locale),
     openGraph: {
       type: 'website',
       siteName: site.name,

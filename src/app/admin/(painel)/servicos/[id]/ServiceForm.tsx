@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import { Field, Panel, TextArea, type ActionState } from '../../ui';
 import { SaveBar } from '../../SaveBar';
 import { ImagePicker } from '../../ImagePicker';
@@ -28,30 +28,46 @@ export type ServiceFormData = {
   en: Translation;
 };
 
-/** Pontos do serviço: título curto + explicação, em número variável. */
+/**
+ * Pontos do serviço: título curto + explicação, em número variável.
+ *
+ * Estado controlado com id estável por linha. Com `key={index}` e inputs não
+ * controlados, remover um item do meio deixava os valores digitados na posição
+ * antiga — o React reutiliza o nó e não reaplica o defaultValue —, e a gravação
+ * trocava ou perdia pontos. Com id estável e value controlado isso não acontece.
+ */
 function Points({ locale, initial }: { locale: 'pt' | 'en'; initial: { title: string; text: string }[] }) {
-  const [rows, setRows] = useState(initial.length > 0 ? initial : [{ title: '', text: '' }]);
+  const nextKey = useRef(0);
+  const makeKey = () => `p${nextKey.current++}`;
+  const [rows, setRows] = useState<{ key: string; title: string; text: string }[]>(() =>
+    (initial.length > 0 ? initial : [{ title: '', text: '' }]).map((row) => ({ key: makeKey(), ...row })),
+  );
+
+  const update = (key: string, field: 'title' | 'text', value: string) =>
+    setRows((current) => current.map((row) => (row.key === key ? { ...row, [field]: value } : row)));
 
   return (
     <div style={{ display: 'grid', gap: '0.75rem' }}>
       {rows.map((row, index) => (
-        <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '0.5rem' }}>
+        <div key={row.key} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '0.5rem' }}>
           <input
             className="adm-input"
             name={`pontos.${locale}.${index}.title`}
-            defaultValue={row.title}
+            value={row.title}
+            onChange={(event) => update(row.key, 'title', event.target.value)}
             placeholder="Título"
           />
           <input
             className="adm-input"
             name={`pontos.${locale}.${index}.text`}
-            defaultValue={row.text}
+            value={row.text}
+            onChange={(event) => update(row.key, 'text', event.target.value)}
             placeholder="Explicação"
           />
           <button
             type="button"
             className="adm-btn adm-btn--danger adm-btn--small"
-            onClick={() => setRows(rows.filter((_, position) => position !== index))}
+            onClick={() => setRows((current) => current.filter((item) => item.key !== row.key))}
             aria-label={`Remover ponto ${index + 1}`}
           >
             Remover
@@ -62,7 +78,7 @@ function Points({ locale, initial }: { locale: 'pt' | 'en'; initial: { title: st
       <button
         type="button"
         className="adm-btn adm-btn--ghost adm-btn--small"
-        onClick={() => setRows([...rows, { title: '', text: '' }])}
+        onClick={() => setRows((current) => [...current, { key: makeKey(), title: '', text: '' }])}
         style={{ justifySelf: 'start' }}
       >
         Acrescentar ponto

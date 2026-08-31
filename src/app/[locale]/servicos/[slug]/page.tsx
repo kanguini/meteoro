@@ -8,7 +8,7 @@ import { ImageHero, Keywords, PlainHero } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
 import { isLocale, locales } from '@/i18n';
 import { getSiteContent } from '@/lib/content';
-import { href, paths, serviceHref } from '@/lib/routes';
+import { href, paths, serviceHref, alternatesFor } from '@/lib/routes';
 import { getServices } from '@/lib/content';
 
 /**
@@ -36,7 +36,7 @@ export async function generateMetadata({
   return {
     title: service.title,
     description: service.short,
-    alternates: { canonical: serviceHref(locale, service.slug) },
+    alternates: alternatesFor(locale, paths.services, service.slug),
   };
 }
 

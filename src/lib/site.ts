@@ -13,7 +13,7 @@ export const site = {
     pt: 'Construção e Gestão de Projectos',
     en: 'Construction and Project Management',
   },
-  url: 'https://meteoro24.ao',
+  url: 'https://meteoro24.com',
   founded: '2024',
 
   phone: '+244 927 635 946',

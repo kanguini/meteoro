@@ -8,7 +8,7 @@ import { Keywords, Pillars, PlainHero } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
 import { isLocale, locales } from '@/i18n';
 import { getSiteContent } from '@/lib/content';
-import { href, paths } from '@/lib/routes';
+import { href, paths, alternatesFor } from '@/lib/routes';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -25,7 +25,7 @@ export async function generateMetadata({
   return {
     title: content.nav.about,
     description: content.about.hero.lead,
-    alternates: { canonical: href(locale, paths.about) },
+    alternates: alternatesFor(locale, paths.about),
   };
 }
 

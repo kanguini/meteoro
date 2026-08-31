@@ -7,7 +7,7 @@ import { PlainHero } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
 import { isLocale, locales } from '@/i18n';
 import { getSiteContent } from '@/lib/content';
-import { href, paths, serviceHref } from '@/lib/routes';
+import { href, paths, serviceHref, alternatesFor } from '@/lib/routes';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -24,7 +24,7 @@ export async function generateMetadata({
   return {
     title: content.nav.services,
     description: content.services.hero.lead,
-    alternates: { canonical: href(locale, paths.services) },
+    alternates: alternatesFor(locale, paths.services),
   };
 }
 

@@ -121,6 +121,18 @@ textarea {
   outline-offset: 3px;
 }
 
+/*
+  Sobre fundos ou botões vermelhos o anel vermelho desaparecia. Um anel escuro
+  com halo branco à volta contrasta em qualquer contexto (WCAG 2.4.7 / 1.4.11).
+*/
+.section--red :focus-visible,
+.btn--red:focus-visible,
+.section--red .btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--white);
+}
+
 ::selection {
   background: var(--red);
   color: var(--white);

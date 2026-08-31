@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { isExternal, isVideo } from '@/lib/media';
+import { HeroVideo } from './HeroVideo';
 import Link from 'next/link';
 import { Reveal } from './Reveal';
 import { ArrowRight } from './Icons';
@@ -36,24 +37,8 @@ export function ImageHero({
     <section className={['hero', large ? '' : 'hero--page'].join(' ')}>
       <div className="hero__media">
         {isVideo(image.src) ? (
-          /*
-            Vídeo de fundo: sem som, em ciclo e sem controlos. O `playsInline` é
-            o que impede o iOS de o abrir em ecrã inteiro. O `poster` aparece
-            enquanto carrega e fica quando o browser recusa tocar sozinho — é o
-            caso de quem tem "reduzir movimento" ligado ou está a poupar dados.
-          */
-          <video
-            className="hero__video"
-            src={image.src}
-            poster={poster || undefined}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            aria-label={image.alt || undefined}
-            style={{ objectPosition: imagePosition ?? 'center' }}
-          />
+          // O vídeo respeita "reduzir movimento" — ver HeroVideo.
+          <HeroVideo src={image.src} poster={poster} alt={image.alt} objectPosition={imagePosition} />
         ) : (
           <Image
             src={image.src}

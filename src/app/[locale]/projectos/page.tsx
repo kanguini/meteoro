@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { isExternal } from '@/lib/media';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PageShell } from '@/components/PageShell';
@@ -8,7 +9,7 @@ import { PlainHero } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
 import { isLocale, locales } from '@/i18n';
 import { getProjects, getSiteContent } from '@/lib/content';
-import { href, paths, serviceHref } from '@/lib/routes';
+import { href, paths, serviceHref, alternatesFor } from '@/lib/routes';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -25,7 +26,7 @@ export async function generateMetadata({
   return {
     title: content.nav.projects,
     description: content.projects.hero.lead,
-    alternates: { canonical: href(locale, paths.projects) },
+    alternates: alternatesFor(locale, paths.projects),
   };
 }
 
@@ -70,6 +71,8 @@ export default async function ProjectsPage({ params }: { params: Promise<{ local
                           alt={work.title}
                           fill
                           sizes="(max-width: 900px) 100vw, 33vw"
+                          // Endereço externo colado no painel não passa pelo optimizador.
+                          unoptimized={isExternal(work.coverImage)}
                           style={{ objectFit: 'cover' }}
                         />
                         <span className="typology__scrim" />
@@ -121,6 +124,7 @@ export default async function ProjectsPage({ params }: { params: Promise<{ local
                         alt={service.image.alt}
                         fill
                         sizes="(max-width: 900px) 100vw, 33vw"
+                        unoptimized={isExternal(service.image.src)}
                         style={{ objectFit: 'cover' }}
                       />
                       <span className="typology__scrim" />

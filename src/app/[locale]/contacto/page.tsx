@@ -6,7 +6,7 @@ import { PlainHero } from '@/components/Blocks';
 import { ContactForm } from '@/components/ContactForm';
 import { isLocale, locales } from '@/i18n';
 import { getSettings, getSiteContent } from '@/lib/content';
-import { href, paths } from '@/lib/routes';
+import { href, paths, alternatesFor } from '@/lib/routes';
 import { site } from '@/lib/site';
 
 export function generateStaticParams() {
@@ -24,7 +24,7 @@ export async function generateMetadata({
   return {
     title: content.nav.contact,
     description: content.contact.hero.lead,
-    alternates: { canonical: href(locale, paths.contact) },
+    alternates: alternatesFor(locale, paths.contact),
   };
 }
 

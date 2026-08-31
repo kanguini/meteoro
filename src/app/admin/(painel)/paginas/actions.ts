@@ -7,6 +7,7 @@ import { requireUser } from '@/lib/auth/guard';
 import { revalidateSite } from '@/lib/revalidate';
 import { applyLeaves, type LeafKind } from '@/lib/json-form';
 import { getContent } from '@/i18n';
+import { deepMerge } from '@/lib/deep-merge';
 import { locales, type Locale } from '@/i18n/config';
 import { isContentPage } from './pages';
 import type { ActionState } from '../ui';
@@ -61,6 +62,9 @@ async function currentData(locale: Locale, page: string): Promise<unknown> {
     .where(and(eq(pageContent.locale, locale), eq(pageContent.page, page as never)))
     .limit(1);
 
-  if (row) return row.data;
-  return (getContent(locale) as unknown as Record<string, unknown>)[page];
+  // O estático é a base: um campo novo do tipo Content aparece no editor mesmo
+  // que o snapshot gravado (anterior a esse campo) não o tenha.
+  const staticData = (getContent(locale) as unknown as Record<string, unknown>)[page];
+  if (row) return deepMerge(staticData, row.data);
+  return staticData;
 }

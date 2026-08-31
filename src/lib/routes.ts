@@ -1,4 +1,4 @@
-import type { Locale } from '@/i18n/config';
+import { locales, type Locale } from '@/i18n/config';
 
 export const paths = {
   home: '',
@@ -21,4 +21,17 @@ export function href(locale: Locale, path: string = '', slug?: string): string {
 
 export function serviceHref(locale: Locale, slug: string): string {
   return href(locale, paths.services, slug);
+}
+
+/**
+ * Bloco `alternates` para o metadata de uma página: canonical do idioma actual
+ * mais hreflang para cada idioma e um x-default. Sem isto o Google não sabe que
+ * /pt/metodo e /en/metodo são a mesma página em idiomas diferentes.
+ */
+export function alternatesFor(locale: Locale, path: string = '', slug?: string) {
+  const languages: Record<string, string> = {};
+  for (const code of locales) languages[code] = href(code, path, slug);
+  languages['x-default'] = href('pt', path, slug);
+
+  return { canonical: href(locale, path, slug), languages };
 }

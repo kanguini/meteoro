@@ -2,6 +2,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import { db, hasDatabase } from '@/db';
 import { pageContent, projects, projectTranslations, services, serviceTranslations, settings } from '@/db/schema';
 import { getContent as getStaticContent } from '@/i18n';
+import { deepMerge } from '@/lib/deep-merge';
 import { site as staticSite } from '@/lib/site';
 import type { Locale } from '@/i18n/config';
 import type { Content, Service } from '@/i18n/types';
@@ -193,13 +194,15 @@ export async function getSiteContent(locale: Locale): Promise<Content> {
   const merged = await readOrFallback(
     async () => {
       const rows = await db.select().from(pageContent).where(eq(pageContent.locale, locale));
-      const next: Content = structuredClone(base);
+      const next = structuredClone(base) as unknown as Record<string, unknown>;
 
       for (const row of rows) {
-        (next as unknown as Record<string, unknown>)[row.page] = row.data;
+        // Deep-merge, não substituição: um campo em falta no snapshot cai para o
+        // valor estático em vez de ficar undefined e partir o render.
+        next[row.page] = deepMerge(next[row.page], row.data);
       }
 
-      return next;
+      return next as unknown as Content;
     },
     () => structuredClone(base),
     'os textos das páginas',
