@@ -120,8 +120,12 @@ export async function deleteService(formData: FormData) {
   const id = String(formData.get('id') ?? '');
   if (!id) return;
 
-  // As traduções desaparecem com o serviço (ON DELETE CASCADE no esquema).
-  await db.delete(services).where(eq(services.id, id));
+  // Não há chaves estrangeiras, por isso as traduções não desaparecem sozinhas:
+  // apagam-se explicitamente, na mesma transação, para não ficarem órfãs.
+  await db.transaction(async (tx) => {
+    await tx.delete(serviceTranslations).where(eq(serviceTranslations.serviceId, id));
+    await tx.delete(services).where(eq(services.id, id));
+  });
   revalidateSite();
   redirect('/admin/servicos');
 }
@@ -147,9 +151,12 @@ export async function moveService(formData: FormData) {
   const reordered = [...all];
   [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
 
-  for (const [position, row] of reordered.entries()) {
-    await db.update(services).set({ position }).where(eq(services.id, row.id));
-  }
+  // Numa transação: uma falha a meio não deixa a ordem parcialmente reescrita.
+  await db.transaction(async (tx) => {
+    for (const [position, row] of reordered.entries()) {
+      await tx.update(services).set({ position }).where(eq(services.id, row.id));
+    }
+  });
 
   revalidateSite();
 }

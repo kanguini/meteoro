@@ -21,6 +21,7 @@ export function Header({ locale, content, transparent = false }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [seenPath, setSeenPath] = useState(pathname);
   const groupRef = useRef<HTMLDivElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -31,11 +32,14 @@ export function Header({ locale, content, transparent = false }: HeaderProps) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Fecha o painel móvel ao mudar de página
-  useEffect(() => {
+  // Fecha os menus ao mudar de página. Ajuste de estado durante o render (o
+  // padrão recomendado do React para reagir a uma mudança de valor), em vez de
+  // um efeito com setState — mais direto e sem re-render extra.
+  if (pathname !== seenPath) {
+    setSeenPath(pathname);
     setMenuOpen(false);
     setServicesOpen(false);
-  }, [pathname]);
+  }
 
   // Bloqueia o scroll do body com o painel móvel aberto
   useEffect(() => {
@@ -100,6 +104,7 @@ export function Header({ locale, content, transparent = false }: HeaderProps) {
             <Link
               href={href(locale, paths.about)}
               className={['nav__link', isActive(paths.about) ? 'is-active' : ''].join(' ')}
+              aria-current={isActive(paths.about) ? 'page' : undefined}
             >
               {content.nav.about}
             </Link>
@@ -110,6 +115,14 @@ export function Header({ locale, content, transparent = false }: HeaderProps) {
               ref={groupRef}
               onMouseEnter={openServices}
               onMouseLeave={scheduleCloseServices}
+              onFocus={openServices}
+              onBlur={(event) => {
+                // Só fecha quando o foco sai mesmo do grupo — navegar entre os
+                // itens do menu por teclado mantém-no aberto.
+                if (!groupRef.current?.contains(event.relatedTarget as Node | null)) {
+                  scheduleCloseServices();
+                }
+              }}
             >
               <button
                 type="button"
@@ -117,13 +130,12 @@ export function Header({ locale, content, transparent = false }: HeaderProps) {
                 aria-expanded={servicesOpen}
                 aria-haspopup="true"
                 onClick={() => setServicesOpen((open) => !open)}
-                onFocus={openServices}
               >
                 {content.nav.services}
                 <Chevron />
               </button>
 
-              <div className="megamenu" role="menu" onBlur={scheduleCloseServices}>
+              <div className="megamenu" role="menu">
                 {content.services.items.map((service) => (
                   <Link
                     key={service.slug}
@@ -146,6 +158,7 @@ export function Header({ locale, content, transparent = false }: HeaderProps) {
                 key={link.path}
                 href={href(locale, link.path)}
                 className={['nav__link', isActive(link.path) ? 'is-active' : ''].join(' ')}
+                aria-current={isActive(link.path) ? 'page' : undefined}
               >
                 {link.label}
               </Link>

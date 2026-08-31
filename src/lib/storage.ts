@@ -59,6 +59,37 @@ function safeName(filename: string, extension: string): string {
   return `${base || 'imagem'}-${randomBytes(4).toString('hex')}.${extension}`;
 }
 
+/**
+ * Verifica a assinatura (magic bytes) do ficheiro contra o tipo declarado. O
+ * Content-Type vem do cliente e é falsificável; isto confirma que o conteúdo é
+ * mesmo do formato que diz ser, antes de o gravar.
+ */
+function signatureMatches(buffer: Buffer, mime: string): boolean {
+  const startsWith = (bytes: number[], offset = 0) =>
+    bytes.every((b, i) => buffer[offset + i] === b);
+  const ascii = (text: string, offset: number) =>
+    [...text].every((ch, i) => buffer[offset + i] === ch.charCodeAt(0));
+
+  switch (mime) {
+    case 'image/jpeg':
+      return startsWith([0xff, 0xd8, 0xff]);
+    case 'image/png':
+      return startsWith([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    case 'image/webp':
+      return ascii('RIFF', 0) && ascii('WEBP', 8);
+    case 'image/avif':
+      return ascii('ftyp', 4); // caixa ISO-BMFF; a marca avif vem a seguir
+    case 'video/mp4':
+    case 'video/quicktime':
+      // Ambos são contentores ISO-BMFF: caixa ftyp/moov/mdat logo no início.
+      return ascii('ftyp', 4) || ascii('moov', 4) || ascii('mdat', 4);
+    case 'video/webm':
+      return startsWith([0x1a, 0x45, 0xdf, 0xa3]); // EBML (Matroska/WebM)
+    default:
+      return false;
+  }
+}
+
 export async function uploadImage(file: File): Promise<UploadResult> {
   const allowed = ALLOWED.get(file.type);
   if (!allowed) {
@@ -72,11 +103,17 @@ export async function uploadImage(file: File): Promise<UploadResult> {
     return { ok: false, error: `O ficheiro tem ${size} MB. O limite é ${max} MB.` };
   }
 
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  if (!signatureMatches(buffer, file.type)) {
+    return { ok: false, error: 'O conteúdo do ficheiro não corresponde ao formato indicado.' };
+  }
+
   const name = safeName(file.name, allowed.extension);
 
   try {
     await mkdir(UPLOAD_DIR, { recursive: true });
-    await writeFile(path.join(UPLOAD_DIR, name), Buffer.from(await file.arrayBuffer()));
+    await writeFile(path.join(UPLOAD_DIR, name), buffer);
 
     return {
       ok: true,

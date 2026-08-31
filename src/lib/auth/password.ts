@@ -59,3 +59,19 @@ export function validatePassword(password: string): string | null {
   }
   return null;
 }
+
+/**
+ * Compara duas strings em tempo constante. Para segredos curtos (tokens de
+ * setup) evita que o tempo de resposta revele quantos caracteres coincidem.
+ */
+export function safeEqualString(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) {
+    // Compara na mesma contra um buffer do mesmo tamanho para não denunciar o
+    // comprimento pelo tempo; o resultado é sempre falso.
+    timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return timingSafeEqual(bufA, bufB);
+}

@@ -5,6 +5,7 @@ import { getSettings } from '@/lib/content';
 import { newId } from '@/lib/id';
 import { mailerConfigured, sendMail } from '@/lib/mailer';
 import { isLocale } from '@/i18n/config';
+import { clientIp, hit } from '@/lib/rate-limit';
 
 /**
  * Recebe o formulário de contacto.
@@ -17,6 +18,13 @@ import { isLocale } from '@/i18n/config';
  */
 export async function POST(request: Request) {
   let payload: Record<string, unknown>;
+
+  // No máximo 5 mensagens por IP em 10 minutos — trava spam e inundação da tabela.
+  const ip = await clientIp();
+  const gate = hit(`contact:${ip}`, 5, 10 * 60 * 1000);
+  if (!gate.ok) {
+    return NextResponse.json({ code: 'rate_limited' }, { status: 429, headers: { 'Retry-After': String(gate.retryAfterSeconds) } });
+  }
 
   try {
     payload = await request.json();
@@ -74,6 +82,11 @@ export async function POST(request: Request) {
   return NextResponse.json({ ok: true });
 }
 
+/** Remove quebras de linha: impede injeção de cabeçalhos no assunto do email. */
+function oneLine(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ').slice(0, 200);
+}
+
 async function sendNotification(data: {
   name: string;
   email: string;
@@ -99,7 +112,7 @@ async function sendNotification(data: {
   return sendMail({
     to,
     replyTo: data.email,
-    subject: `[Site] ${data.subject || 'Novo contacto'} — ${data.name}`,
+    subject: oneLine(`[Site] ${data.subject || 'Novo contacto'} — ${data.name}`),
     text: lines.join('\n'),
   });
 }

@@ -7,7 +7,6 @@ import * as schema from './schema';
 type Database = MySql2Database<typeof schema>;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __meteoroPool: mysql.Pool | undefined;
 }
 
@@ -34,10 +33,18 @@ function getDb(): Database {
     mysql.createPool({
       uri: url,
       connectionLimit: 5,
-      // O MySQL devolve DATETIME como string se não for isto; o Drizzle espera Date.
+      // As datas voltam em UTC; sem isto o mysql2 aplica o fuso do servidor.
       timezone: 'Z',
-      // O painel guarda estruturas em colunas JSON: sem isto vinham como string.
-      supportBigNumbers: true,
+      // Fixa o charset da ligação em utf8mb4 (4 bytes): não depende do default
+      // do servidor e aceita emoji e símbolos além do plano básico.
+      charset: 'utf8mb4',
+      // O MySQL da Hostinger fecha ligações inativas ao fim do wait_timeout.
+      // O keep-alive e o limite de inatividade reciclam-nas antes de irem abaixo,
+      // evitando o "connection lost" no primeiro pedido após um período calmo.
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 10_000,
+      maxIdle: 5,
+      idleTimeout: 60_000,
     });
 
   if (process.env.NODE_ENV !== 'production') globalThis.__meteoroPool = pool;

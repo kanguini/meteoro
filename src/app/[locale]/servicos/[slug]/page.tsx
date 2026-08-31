@@ -54,8 +54,11 @@ export default async function ServicePage({
   if (index === -1) notFound();
 
   const service = items[index];
-  const previous = index > 0 ? items[index - 1] : items[items.length - 1];
-  const next = index < items.length - 1 ? items[index + 1] : items[0];
+  // Com um único serviço, o "anterior"/"seguinte" seriam ele próprio: só se
+  // calcula a paginação quando há mais do que um.
+  const hasSiblings = items.length > 1;
+  const previous = hasSiblings ? items[(index - 1 + items.length) % items.length] : null;
+  const next = hasSiblings ? items[(index + 1) % items.length] : null;
 
   return (
     <PageShell locale={locale} content={content} transparentHeader={Boolean(service.image)}>
@@ -120,16 +123,18 @@ export default async function ServicePage({
             </Reveal>
           )}
 
-          <div className="service-pager">
-            <Link href={serviceHref(locale, previous.slug)} className="service-pager__item">
-              <span className="service-pager__label">{content.common.previousService}</span>
-              <span className="service-pager__title">{previous.title}</span>
-            </Link>
-            <Link href={serviceHref(locale, next.slug)} className="service-pager__item">
-              <span className="service-pager__label">{content.common.nextService}</span>
-              <span className="service-pager__title">{next.title}</span>
-            </Link>
-          </div>
+          {previous && next && (
+            <div className="service-pager">
+              <Link href={serviceHref(locale, previous.slug)} className="service-pager__item">
+                <span className="service-pager__label">{content.common.previousService}</span>
+                <span className="service-pager__title">{previous.title}</span>
+              </Link>
+              <Link href={serviceHref(locale, next.slug)} className="service-pager__item">
+                <span className="service-pager__label">{content.common.nextService}</span>
+                <span className="service-pager__title">{next.title}</span>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

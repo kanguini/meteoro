@@ -1,14 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
+
+/**
+ * Lê "reduzir movimento" como uma fonte externa, via useSyncExternalStore —
+ * o idioma correto para subscrever uma media query sem setState num efeito.
+ * No servidor devolve `true` (assume-se movimento reduzido), por isso a primeira
+ * pintura mostra a imagem estática e nunca o vídeo a quem o não quer.
+ */
+function subscribe(callback: () => void) {
+  const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+  query.addEventListener('change', callback);
+  return () => query.removeEventListener('change', callback);
+}
+
+function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    () => true,
+  );
+}
 
 /**
  * Vídeo de fundo do hero que respeita "reduzir movimento".
  *
- * Ao contrário do que o código anterior assumia, os browsers NÃO suspendem o
- * autoplay de vídeo sem som por causa de prefers-reduced-motion. Por isso a
- * decisão é tomada aqui: com movimento reduzido mostramos a imagem estática
- * (poster ou fotografia) em vez do vídeo. Cumpre a WCAG 2.2.2 (Pause/Stop/Hide).
+ * Os browsers NÃO suspendem o autoplay de vídeo sem som por causa de
+ * prefers-reduced-motion, por isso a decisão é tomada aqui: com movimento
+ * reduzido mostra-se a imagem estática (poster ou fotografia). WCAG 2.2.2.
  */
 export function HeroVideo({
   src,
@@ -21,18 +40,7 @@ export function HeroVideo({
   alt?: string;
   objectPosition?: string;
 }) {
-  // Assumir movimento reduzido até saber o contrário evita um flash de vídeo
-  // em quem pediu para não o ter.
-  const [reduced, setReduced] = useState(true);
-
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(query.matches);
-
-    const onChange = (event: MediaQueryListEvent) => setReduced(event.matches);
-    query.addEventListener('change', onChange);
-    return () => query.removeEventListener('change', onChange);
-  }, []);
+  const reduced = usePrefersReducedMotion();
 
   if (reduced) {
     const still = poster || src;

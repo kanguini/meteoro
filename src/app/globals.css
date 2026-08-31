@@ -9,7 +9,7 @@
   --bg-raised: #ededec;
   --ink: #101010;
   --ink-soft: #5c5c5c;
-  --ink-faint: #8a8a8a;
+  --ink-faint: #65615a; /* escurecido para passar o contraste AA (4.8:1) */
   --red: #c8102e;
   --red-bright: #e31b3d;
   --dark: #161616;

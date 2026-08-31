@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 /**
  * Rede de segurança do painel. Sem isto, uma exceção não apanhada numa página
  * do painel mostrava o ecrã cru "This page couldn't load" do Next, sem pista
@@ -23,9 +25,9 @@ export default function PainelError({ error, reset }: { error: Error & { digest?
         <button type="button" className="adm-btn" onClick={reset}>
           Tentar de novo
         </button>
-        <a href="/admin" className="adm-btn adm-btn--ghost">
+        <Link href="/admin" className="adm-btn adm-btn--ghost">
           Voltar ao resumo
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -37,11 +37,14 @@ export type ServiceFormData = {
  * trocava ou perdia pontos. Com id estável e value controlado isso não acontece.
  */
 function Points({ locale, initial }: { locale: 'pt' | 'en'; initial: { title: string; text: string }[] }) {
-  const nextKey = useRef(0);
-  const makeKey = () => `p${nextKey.current++}`;
+  const seed = initial.length > 0 ? initial : [{ title: '', text: '' }];
   const [rows, setRows] = useState<{ key: string; title: string; text: string }[]>(() =>
-    (initial.length > 0 ? initial : [{ title: '', text: '' }]).map((row) => ({ key: makeKey(), ...row })),
+    seed.map((row, index) => ({ key: `p${index}`, ...row })),
   );
+  // O contador arranca depois das linhas iniciais e só avança nos handlers —
+  // nunca se lê a ref durante o render.
+  const nextKey = useRef(seed.length);
+  const makeKey = () => `p${nextKey.current++}`;
 
   const update = (key: string, field: 'title' | 'text', value: string) =>
     setRows((current) => current.map((row) => (row.key === key ? { ...row, [field]: value } : row)));

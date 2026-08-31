@@ -30,11 +30,11 @@ export type ProjectFormData = {
  * a descrição de uma linha colada a outra imagem e gravava o par trocado.
  */
 function Gallery({ initial, library }: { initial: GalleryItem[]; library: { url: string; filename: string }[] }) {
-  const nextKey = useRef(0);
-  const makeKey = () => `g${nextKey.current++}`;
   const [rows, setRows] = useState<(GalleryItem & { key: string })[]>(() =>
-    initial.map((row) => ({ key: makeKey(), ...row })),
+    initial.map((row, index) => ({ key: `g${index}`, ...row })),
   );
+  const nextKey = useRef(initial.length);
+  const makeKey = () => `g${nextKey.current++}`;
 
   const update = (key: string, field: keyof GalleryItem, value: string) =>
     setRows((current) => current.map((row) => (row.key === key ? { ...row, [field]: value } : row)));

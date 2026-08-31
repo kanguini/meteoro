@@ -120,7 +120,11 @@ export async function deleteProject(formData: FormData) {
   const id = String(formData.get('id') ?? '');
   if (!id) return;
 
-  await db.delete(projects).where(eq(projects.id, id));
+  // Sem FK cascade — as traduções apagam-se explicitamente, na mesma transação.
+  await db.transaction(async (tx) => {
+    await tx.delete(projectTranslations).where(eq(projectTranslations.projectId, id));
+    await tx.delete(projects).where(eq(projects.id, id));
+  });
   revalidateSite();
   redirect('/admin/obras');
 }
@@ -144,9 +148,11 @@ export async function moveProject(formData: FormData) {
   const reordered = [...all];
   [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
 
-  for (const [position, row] of reordered.entries()) {
-    await db.update(projects).set({ position }).where(eq(projects.id, row.id));
-  }
+  await db.transaction(async (tx) => {
+    for (const [position, row] of reordered.entries()) {
+      await tx.update(projects).set({ position }).where(eq(projects.id, row.id));
+    }
+  });
 
   revalidateSite();
 }

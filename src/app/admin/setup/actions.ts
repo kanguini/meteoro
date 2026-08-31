@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { count, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema';
-import { hashPassword, validatePassword } from '@/lib/auth/password';
+import { hashPassword, safeEqualString, validatePassword } from '@/lib/auth/password';
 import { createSession } from '@/lib/auth/session';
 import { newId } from '@/lib/id';
 
@@ -29,7 +29,7 @@ export async function createFirstUser(_previous: SetupState, formData: FormData)
     return { error: 'Falta definir SETUP_TOKEN nas variáveis de ambiente do alojamento.' };
   }
 
-  if (String(formData.get('token') ?? '') !== expected) {
+  if (!safeEqualString(String(formData.get('token') ?? ''), expected)) {
     return { error: 'Código de instalação incorrecto.' };
   }
 

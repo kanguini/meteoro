@@ -72,16 +72,42 @@ export function ContactForm({ content, fallbackEmail }: { content: Content; fall
             <label className="field__label" htmlFor="name">
               {t.name} *
             </label>
-            <input className="field__input" id="name" name="name" type="text" autoComplete="name" required />
-            {errors.name && <span className="field__error">{errors.name}</span>}
+            <input
+              className="field__input"
+              id="name"
+              name="name"
+              type="text"
+              autoComplete="name"
+              required
+              aria-invalid={Boolean(errors.name)}
+              aria-describedby={errors.name ? 'name-error' : undefined}
+            />
+            {errors.name && (
+              <span className="field__error" id="name-error">
+                {errors.name}
+              </span>
+            )}
           </div>
 
           <div className="field" data-invalid={Boolean(errors.email)}>
             <label className="field__label" htmlFor="email">
               {t.email} *
             </label>
-            <input className="field__input" id="email" name="email" type="email" autoComplete="email" required />
-            {errors.email && <span className="field__error">{errors.email}</span>}
+            <input
+              className="field__input"
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? 'email-error' : undefined}
+            />
+            {errors.email && (
+              <span className="field__error" id="email-error">
+                {errors.email}
+              </span>
+            )}
           </div>
         </div>
 
@@ -111,8 +137,20 @@ export function ContactForm({ content, fallbackEmail }: { content: Content; fall
           <label className="field__label" htmlFor="message">
             {t.message} *
           </label>
-          <textarea className="field__textarea" id="message" name="message" rows={6} required />
-          {errors.message && <span className="field__error">{errors.message}</span>}
+          <textarea
+            className="field__textarea"
+            id="message"
+            name="message"
+            rows={6}
+            required
+            aria-invalid={Boolean(errors.message)}
+            aria-describedby={errors.message ? 'message-error' : undefined}
+          />
+          {errors.message && (
+            <span className="field__error" id="message-error">
+              {errors.message}
+            </span>
+          )}
         </div>
 
         <div className="form__footer">

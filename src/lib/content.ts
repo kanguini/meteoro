@@ -121,6 +121,10 @@ export async function getServices(locale: Locale): Promise<Service[]> {
         .where(eq(services.published, true))
         .orderBy(asc(services.position));
 
+      // Base ligada mas sem serviços (nunca semeada, ou todos despublicados):
+      // cai para o conteúdo estático em vez de deixar o site sem serviços.
+      if (rows.length === 0) return getStaticContent(locale).services.items;
+
       return rows.map((row) => ({
         slug: row.slug,
         number: row.number,
