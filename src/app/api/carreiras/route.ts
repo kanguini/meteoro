@@ -32,6 +32,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ code: 'not_configured' }, { status: 503 });
   }
 
+  // Rejeita corpos manifestamente grandes antes de os carregar para memória.
+  // O CV tem limite de 5 MB; 8 MB dá folga para os campos e o overhead multipart.
+  const declaredLength = Number(request.headers.get('content-length') ?? '0');
+  if (declaredLength > 8 * 1024 * 1024) {
+    return NextResponse.json({ code: 'too_large' }, { status: 413 });
+  }
+
   const form = await request.formData().catch(() => null);
   if (!form) {
     return NextResponse.json({ code: 'bad_request' }, { status: 400 });
@@ -60,17 +67,23 @@ export async function POST(request: Request) {
   let jobTitle = '';
 
   if (jobSlug) {
-    const [job] = await db
-      .select({ id: jobs.id, title: jobTranslations.title })
-      .from(jobs)
-      .leftJoin(jobTranslations, eq(jobTranslations.jobId, jobs.id))
-      .where(eq(jobs.slug, jobSlug))
-      .limit(1);
+    try {
+      const [job] = await db
+        .select({ id: jobs.id, title: jobTranslations.title })
+        .from(jobs)
+        .leftJoin(jobTranslations, eq(jobTranslations.jobId, jobs.id))
+        .where(eq(jobs.slug, jobSlug))
+        .limit(1);
 
-    if (job) {
-      jobId = job.id;
-      jobTitle = job.title ?? jobSlug;
-    } else {
+      if (job) {
+        jobId = job.id;
+        jobTitle = job.title ?? jobSlug;
+      } else {
+        jobTitle = jobSlug;
+      }
+    } catch {
+      // Tabela ainda inexistente ou indisponível: guarda-se o slug como título
+      // e segue-se; o insert abaixo trata a falha real da base de dados.
       jobTitle = jobSlug;
     }
   }
@@ -99,9 +112,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ code: 'save_failed' }, { status: 500 });
   }
 
-  // Notifica a equipa, com o CV em anexo. A candidatura já está guardada, por
-  // isso uma falha de email não a perde.
-  void notify({ name, email, phone, message, jobTitle, locale, cvPath: cv.path, cvFilename: cv.filename });
+  // Notifica a equipa, com o CV em anexo. Aguarda-se para garantir o envio antes
+  // de a resposta terminar; a candidatura já está guardada, por isso uma falha
+  // de email não a perde (notify nunca lança).
+  await notify({ name, email, phone, message, jobTitle, locale, cvPath: cv.path, cvFilename: cv.filename });
 
   return NextResponse.json({ ok: true });
 }
