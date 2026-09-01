@@ -221,10 +221,7 @@ export const en: Content = {
         title: 'Cost estimating',
         short: 'Measurements, bills of quantities and estimates that make the investment transparent before execution.',
         lead: 'Cost forecast. Execution verified.',
-        body: [
-          'Measurements, bills of quantities and estimates that make the investment more transparent before execution begins.',
-          'A budget exists to support a decision, not just to be approved. We work from measured quantities and stated assumptions, so whoever reads the estimate can see where each figure comes from and what changes if the solution changes.',
-        ],
+        body: ['A budget exists to support a decision, not just to be approved. We work from measured quantities and stated assumptions, so whoever reads the estimate can see where each figure comes from and what changes if the solution changes.'],
         points: [
           { title: 'Measure', text: 'Survey and measurement of what the build requires, item by item.' },
           { title: 'Estimate', text: 'Rates and outputs applied to real quantities, with assumptions written down.' },
@@ -238,10 +235,7 @@ export const en: Content = {
         title: 'Site supervision',
         short: 'Monitoring of quality, compliance, quantities, schedule and the conditions agreed for the works.',
         lead: 'Checking at the right moment costs less than correcting afterwards.',
-        body: [
-          'Monitoring of quality, compliance, quantities, schedule and the conditions agreed for the works.',
-          'Supervision represents the interest of whoever is paying for the build. We verify what is being executed against what was contracted and record what we find, so decisions are documented rather than remembered.',
-        ],
+        body: ['Supervision represents the interest of whoever is paying for the build. We verify what is being executed against what was contracted and record what we find, so decisions are documented rather than remembered.'],
         points: [
           { title: 'Monitor', text: 'Presence on site and verification of execution against the design.' },
           { title: 'Validate', text: 'Technical compliance, quantities executed and contractual conditions.' },
@@ -256,10 +250,7 @@ export const en: Content = {
         title: 'Refurbishment and preventive maintenance',
         short: 'Planned works to adapt spaces, correct defects and extend the service life of buildings.',
         lead: 'Refurbishment recovers value. Maintenance protects the investment.',
-        body: [
-          'Planned works to adapt spaces, correct defects and extend the service life of buildings.',
-          'A building deteriorates predictably. Treating that deterioration early, to a plan, costs a fraction of reacting to a defect that has already taken hold.',
-        ],
+        body: ['A building deteriorates predictably. Treating that deterioration early, to a plan, costs a fraction of reacting to a defect that has already taken hold.'],
         points: [
           { title: 'Refurbishment', text: 'Adaptation of spaces and correction of existing defects.' },
           { title: 'Preventive maintenance', text: 'Scheduled works before the problem becomes a construction job.' },
@@ -273,10 +264,7 @@ export const en: Content = {
         title: 'Steel structures',
         short: 'Design, fabrication and erection coordinated to achieve safety, performance and quality in the details.',
         lead: 'Steel structures built to precision.',
-        body: [
-          'Design, fabrication and erection coordinated to achieve safety, performance and quality in the details.',
-          'In a steel structure, an error cannot be corrected with mortar. Coordination between design, fabrication and erection is what separates a frame that fits first time from one that consumes weeks in adjustments.',
-        ],
+        body: ['In a steel structure, an error cannot be corrected with mortar. Coordination between design, fabrication and erection is what separates a frame that fits first time from one that consumes weeks in adjustments.'],
         points: [
           { title: 'Design', text: 'Structural solution and detailing coordinated with the wider project.' },
           { title: 'Fabrication', text: 'Controlled production, with dimensional checks before it leaves for site.' },
@@ -291,10 +279,7 @@ export const en: Content = {
         title: 'Swimming pool construction',
         short: 'From the technical solution to finishes and plant, we coordinate every stage.',
         lead: 'Pools designed as part of the architecture.',
-        body: [
-          'From the technical solution to the finishes and operating systems, we coordinate every stage to deliver quality, integration and durability.',
-          'A pool is an engineering work with an exposed finish. Structure, waterproofing, hydraulics and finishes have to be decided together — that is where durability is won or lost.',
-        ],
+        body: ['A pool is an engineering work with an exposed finish. Structure, waterproofing, hydraulics and finishes have to be decided together — that is where durability is won or lost.'],
         points: [
           { title: 'Design', text: 'A technical solution integrated with the architecture and the site.' },
           { title: 'Construction', text: 'Structure, waterproofing and hydraulic systems executed under control.' },

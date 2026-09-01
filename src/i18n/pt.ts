@@ -221,10 +221,7 @@ export const pt: Content = {
         title: 'Orçamentação',
         short: 'Medições, mapas de quantidades e estimativas que tornam o investimento transparente antes da execução.',
         lead: 'Custo previsto. Execução verificada.',
-        body: [
-          'Medições, mapas de quantidades e estimativas que tornam o investimento mais transparente antes da execução.',
-          'Um orçamento serve para decidir, não apenas para aprovar. Por isso trabalhamos a partir de quantidades medidas e de pressupostos explícitos — quem lê o orçamento percebe de onde vem cada valor e o que muda se a solução mudar.',
-        ],
+        body: ['Um orçamento serve para decidir, não apenas para aprovar. Por isso trabalhamos a partir de quantidades medidas e de pressupostos explícitos — quem lê o orçamento percebe de onde vem cada valor e o que muda se a solução mudar.'],
         points: [
           { title: 'Medir', text: 'Levantamento e medição do que a obra exige, item a item.' },
           { title: 'Estimar', text: 'Preços e rendimentos aplicados a quantidades reais, com pressupostos escritos.' },
@@ -238,10 +235,7 @@ export const pt: Content = {
         title: 'Fiscalização',
         short: 'Acompanhamento da qualidade, conformidade, quantidades, prazos e condições definidas para a obra.',
         lead: 'Verificar no momento certo custa menos do que corrigir depois.',
-        body: [
-          'Acompanhamento da qualidade, conformidade, quantidades, prazos e condições definidas para a obra.',
-          'A fiscalização representa o interesse de quem paga a obra. Verificamos o que está a ser executado contra o que foi contratado e registamos o que encontramos, para que as decisões fiquem documentadas e não dependam de memória.',
-        ],
+        body: ['A fiscalização representa o interesse de quem paga a obra. Verificamos o que está a ser executado contra o que foi contratado e registamos o que encontramos, para que as decisões fiquem documentadas e não dependam de memória.'],
         points: [
           { title: 'Acompanhar', text: 'Presença em obra e verificação da execução face ao projecto.' },
           { title: 'Validar', text: 'Conformidade técnica, quantidades executadas e condições contratuais.' },
@@ -256,10 +250,7 @@ export const pt: Content = {
         title: 'Reforma e manutenção preventiva de edificações',
         short: 'Intervenções planeadas para adaptar espaços, corrigir patologias e prolongar a vida útil das edificações.',
         lead: 'Reformar recupera valor. Manter protege o investimento.',
-        body: [
-          'Intervenções planeadas para adaptar espaços, corrigir patologias e prolongar a vida útil das edificações.',
-          'Um edifício degrada-se de forma previsível. Tratar a degradação cedo, segundo um plano, custa uma fracção do que custa reagir a uma patologia já instalada.',
-        ],
+        body: ['Um edifício degrada-se de forma previsível. Tratar a degradação cedo, segundo um plano, custa uma fracção do que custa reagir a uma patologia já instalada.'],
         points: [
           { title: 'Reforma', text: 'Adaptação de espaços e correcção de patologias existentes.' },
           { title: 'Manutenção preventiva', text: 'Intervenções programadas antes de o problema se tornar obra.' },
@@ -273,10 +264,7 @@ export const pt: Content = {
         title: 'Estruturas metálicas',
         short: 'Concepção, fabrico e montagem coordenados para alcançar segurança, desempenho e qualidade nos detalhes.',
         lead: 'Estruturas metálicas com precisão.',
-        body: [
-          'Concepção, fabrico e montagem coordenados para alcançar segurança, desempenho e qualidade nos detalhes.',
-          'Numa estrutura metálica, o erro não se corrige com argamassa. A coordenação entre desenho, fabrico e montagem é o que separa uma estrutura que assenta à primeira de uma que consome semanas em ajustes.',
-        ],
+        body: ['Numa estrutura metálica, o erro não se corrige com argamassa. A coordenação entre desenho, fabrico e montagem é o que separa uma estrutura que assenta à primeira de uma que consome semanas em ajustes.'],
         points: [
           { title: 'Concepção', text: 'Solução estrutural e pormenorização compatibilizadas com o projecto.' },
           { title: 'Fabrico', text: 'Produção controlada, com verificação dimensional antes de sair para obra.' },
@@ -291,10 +279,7 @@ export const pt: Content = {
         title: 'Construção de piscinas',
         short: 'Da solução técnica aos acabamentos e sistemas de funcionamento, coordenamos cada etapa.',
         lead: 'Piscinas pensadas como parte da arquitectura.',
-        body: [
-          'Da solução técnica aos acabamentos e sistemas de funcionamento, coordenamos cada etapa para entregar qualidade, integração e durabilidade.',
-          'Uma piscina é uma obra de engenharia com acabamento à vista. Estrutura, impermeabilização, hidráulica e revestimento têm de ser decididos em conjunto — é aí que se ganha ou perde a durabilidade.',
-        ],
+        body: ['Uma piscina é uma obra de engenharia com acabamento à vista. Estrutura, impermeabilização, hidráulica e revestimento têm de ser decididos em conjunto — é aí que se ganha ou perde a durabilidade.'],
         points: [
           { title: 'Projecto', text: 'Solução técnica integrada na arquitectura e no terreno.' },
           { title: 'Construção', text: 'Estrutura, impermeabilização e sistemas hidráulicos executados com controlo.' },
