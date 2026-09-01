@@ -19,11 +19,14 @@ export function mailerConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
+export type MailAttachment = { filename: string; content: Buffer; contentType?: string };
+
 export async function sendMail(options: {
   to: string;
   subject: string;
   text: string;
   replyTo?: string;
+  attachments?: MailAttachment[];
 }): Promise<boolean> {
   if (!mailerConfigured()) return false;
 
@@ -47,6 +50,7 @@ export async function sendMail(options: {
       replyTo: options.replyTo,
       subject: options.subject,
       text: options.text,
+      attachments: options.attachments,
     });
 
     return true;

@@ -15,8 +15,9 @@ import { pt } from '../src/i18n/pt';
 import { en } from '../src/i18n/en';
 import { site } from '../src/lib/site';
 import { newId } from '../src/lib/id';
+import { SEED_JOBS } from '../src/lib/careers-seed';
 
-const PAGES = ['meta', 'nav', 'common', 'home', 'about', 'method', 'projects', 'contact', 'footer'] as const;
+const PAGES = ['meta', 'nav', 'common', 'home', 'about', 'method', 'projects', 'careers', 'contact', 'footer'] as const;
 
 /** Escapa um valor para literal de string MySQL. */
 function q(value: string | null): string {
@@ -159,6 +160,36 @@ function dataSql(): string {
             json(source.body),
             json(source.points),
             json(source.keywords),
+          ].join(', ') +
+          ');',
+      );
+    }
+  }
+
+
+  lines.push('');
+  lines.push('-- Vagas --------------------------------------------------------------------');
+  for (const [index, job] of SEED_JOBS.entries()) {
+    const jobId = newId();
+    lines.push(
+      'INSERT IGNORE INTO `jobs` (`id`, `slug`, `position`, `published`) VALUES (' +
+        [q(jobId), q(job.slug), String(index), '1'].join(', ') +
+        ');',
+    );
+    for (const locale of ['pt', 'en'] as const) {
+      const t = job[locale];
+      lines.push(
+        'INSERT IGNORE INTO `job_translations` (`job_id`, `locale`, `title`, `department`, `type`, `location`, `intro`, `sections`, `profile`) VALUES (' +
+          [
+            q(jobId),
+            q(locale),
+            q(t.title),
+            q(t.department),
+            q(t.type),
+            q(t.location),
+            q(t.intro),
+            json(t.sections),
+            q(t.profile),
           ].join(', ') +
           ');',
       );

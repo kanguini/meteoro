@@ -1691,3 +1691,192 @@ textarea {
   color: rgba(255, 255, 255, 0.45);
   letter-spacing: 0.04em;
 }
+
+/* --------------------------------------------------------------------------
+   Carreiras — vagas e candidatura
+   -------------------------------------------------------------------------- */
+
+.job-list {
+  border-top: 1px solid var(--line);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+.job {
+  border-bottom: 1px solid var(--line);
+}
+
+.job__head {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: clamp(1.4rem, 2.6vw, 2rem) 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.job__headings {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.job__title {
+  font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  transition: color 0.3s var(--ease);
+}
+
+.job__head:hover .job__title {
+  color: var(--red);
+}
+
+.job__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.job__tag {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: var(--bg-raised);
+  padding: 0.28rem 0.6rem;
+  border-radius: 2px;
+}
+
+.job__toggle {
+  flex: none;
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--red);
+  width: 1.5rem;
+  text-align: center;
+}
+
+.job__body {
+  padding: 0 0 clamp(1.75rem, 3vw, 2.5rem);
+  max-width: var(--measure);
+  animation: jobReveal 0.4s var(--ease);
+}
+
+@keyframes jobReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.job__intro {
+  color: var(--ink-soft);
+  margin-bottom: 1.5rem;
+}
+
+.job__section {
+  margin-bottom: 1.35rem;
+}
+
+.job__section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 0.6rem;
+}
+
+.job__items {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.job__items li {
+  position: relative;
+  padding-left: 1.25rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.job__items li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+.job__profile {
+  margin: 1.5rem 0;
+  padding-left: 1.25rem;
+  border-left: 2px solid var(--red);
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.job__profile-label {
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  margin-right: 0.35rem;
+}
+
+.careers-empty {
+  border-top: 1px solid var(--line);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding-top: clamp(2rem, 4vw, 3rem);
+  display: grid;
+  gap: 1.5rem;
+  justify-items: start;
+  max-width: var(--measure);
+}
+
+.careers-empty p {
+  color: var(--ink-soft);
+  font-size: var(--fs-lead);
+  font-weight: 300;
+}
+
+/* Campo de ficheiro no formulário de candidatura */
+.field__file {
+  width: 100%;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  padding: 0.6rem 0;
+}
+
+.field__file::file-selector-button {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--ink);
+  border: 0;
+  padding: 0.6rem 1rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  transition: background 0.3s var(--ease);
+}
+
+.field__file::file-selector-button:hover {
+  background: var(--red);
+}

@@ -4,6 +4,7 @@ export const CONTENT_PAGES = [
   { key: 'about', label: 'Sobre', description: 'História da empresa, princípio de actuação e pilares.' },
   { key: 'method', label: 'Método', description: 'As cinco etapas do processo e o valor que entregam.' },
   { key: 'projects', label: 'Projectos', description: 'Introdução da página de obras e aviso de portefólio.' },
+  { key: 'careers', label: 'Carreiras', description: 'Textos da página de carreiras: destaque, "porquê", e rótulos do formulário. As vagas geram-se em Vagas.' },
   { key: 'contact', label: 'Contacto', description: 'Textos da página e etiquetas do formulário.' },
   { key: 'nav', label: 'Navegação', description: 'Nomes dos itens do menu.' },
   { key: 'common', label: 'Textos comuns', description: 'Botões e ligações repetidos em várias páginas.' },

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { db } from '@/db';
-import { media, messages, projects, services, settings } from '@/db/schema';
+import { applications, media, messages, projects, services, settings } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
 import { mailerConfigured } from '@/lib/mailer';
 import { tryQuery } from '@/lib/db-health';
@@ -13,7 +13,7 @@ export default async function ResumoPage() {
   const user = await requireUser();
 
   const result = await tryQuery(async () => {
-    const [[unread], [publishedServices], [publishedProjects], [mediaCount], [config], recent] = await Promise.all([
+    const [[unread], [publishedServices], [publishedProjects], [mediaCount], [pendingApplications], [config], recent] = await Promise.all([
       db
         .select({ total: count() })
         .from(messages)
@@ -21,11 +21,15 @@ export default async function ResumoPage() {
       db.select({ total: count() }).from(services).where(eq(services.published, true)),
       db.select({ total: count() }).from(projects).where(eq(projects.published, true)),
       db.select({ total: count() }).from(media),
+      db
+        .select({ total: count() })
+        .from(applications)
+        .where(isNull(applications.readAt)),
       db.select().from(settings).limit(1),
       db.select().from(messages).where(isNull(messages.archivedAt)).orderBy(desc(messages.createdAt)).limit(5),
     ]);
 
-    return { unread, publishedServices, publishedProjects, mediaCount, config, recent };
+    return { unread, publishedServices, publishedProjects, mediaCount, pendingApplications, config, recent };
   });
 
   if (!result.ok) {
@@ -42,10 +46,11 @@ export default async function ResumoPage() {
     );
   }
 
-  const { unread, publishedServices, publishedProjects, mediaCount, config, recent } = result.data;
+  const { unread, publishedServices, publishedProjects, mediaCount, pendingApplications, config, recent } = result.data;
 
   const cards = [
     { label: 'Mensagens por ler', value: unread?.total ?? 0, href: '/admin/mensagens' },
+    { label: 'Candidaturas por triar', value: pendingApplications?.total ?? 0, href: '/admin/candidaturas' },
     { label: 'Serviços publicados', value: publishedServices?.total ?? 0, href: '/admin/servicos' },
     { label: 'Obras publicadas', value: publishedProjects?.total ?? 0, href: '/admin/obras' },
     { label: 'Imagens na biblioteca', value: mediaCount?.total ?? 0, href: '/admin/imagens' },

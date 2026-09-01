@@ -10,15 +10,16 @@
  */
 import { eq } from 'drizzle-orm';
 import { db } from '../src/db';
-import { pageContent, services, serviceTranslations, settings } from '../src/db/schema';
+import { jobs, jobTranslations, pageContent, services, serviceTranslations, settings } from '../src/db/schema';
 import { pt } from '../src/i18n/pt';
 import { en } from '../src/i18n/en';
 import { site } from '../src/lib/site';
 import { newId } from '../src/lib/id';
+import { SEED_JOBS } from '../src/lib/careers-seed';
 
 const force = process.argv.includes('--force');
 
-const PAGES = ['meta', 'nav', 'common', 'home', 'about', 'method', 'projects', 'contact', 'footer'] as const;
+const PAGES = ['meta', 'nav', 'common', 'home', 'about', 'method', 'projects', 'careers', 'contact', 'footer'] as const;
 
 async function seedSettings() {
   const existing = await db.select().from(settings).limit(1);
@@ -142,6 +143,31 @@ async function seedServices() {
   }
 }
 
+async function seedJobs() {
+  for (const [index, job] of SEED_JOBS.entries()) {
+    const existing = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.slug, job.slug));
+    if (existing.length > 0 && !force) {
+      console.log(`· vaga "${job.slug}" já existe, ignorada`);
+      continue;
+    }
+
+    const jobId = existing[0]?.id ?? newId();
+
+    await db
+      .insert(jobs)
+      .values({ id: jobId, slug: job.slug, position: index, published: true })
+      .onDuplicateKeyUpdate({ set: { position: index, updatedAt: new Date() } });
+
+    for (const locale of ['pt', 'en'] as const) {
+      const t = job[locale];
+      const translation = { jobId, locale, ...t };
+      await db.insert(jobTranslations).values(translation).onDuplicateKeyUpdate({ set: translation });
+    }
+
+    console.log(`· vaga "${job.slug}" carregada`);
+  }
+}
+
 async function main() {
   if (!process.env.DATABASE_URL) {
     console.error('DATABASE_URL não está definida. Criar .env.local a partir de .env.example.');
@@ -152,6 +178,7 @@ async function main() {
   await seedSettings();
   await seedPages();
   await seedServices();
+  await seedJobs();
   console.log('\nFeito.');
   process.exit(0);
 }

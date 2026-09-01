@@ -85,6 +85,7 @@ export function Header({ locale, content, transparent = false }: HeaderProps) {
     { path: paths.about, label: content.nav.about },
     { path: paths.method, label: content.nav.method },
     { path: paths.projects, label: content.nav.projects },
+    { path: paths.careers, label: content.nav.careers },
     { path: paths.contact, label: content.nav.contact },
   ];
 

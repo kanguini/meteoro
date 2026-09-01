@@ -6,6 +6,7 @@ export const paths = {
   services: 'servicos',
   method: 'metodo',
   projects: 'projectos',
+  careers: 'carreiras',
   contact: 'contacto',
 } as const;
 

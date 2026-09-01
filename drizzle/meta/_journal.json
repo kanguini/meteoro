@@ -15,6 +15,13 @@
       "when": 1788126740940,
       "tag": "0001_chunky_cloak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1788221006594,
+      "tag": "0002_curious_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

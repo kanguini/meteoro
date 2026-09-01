@@ -40,6 +40,7 @@ export type Content = {
     services: string;
     method: string;
     projects: string;
+    careers: string;
     contact: string;
     menu: string;
     close: string;
@@ -102,6 +103,33 @@ export type Content = {
       error: string;
       required: string;
       invalidEmail: string;
+      privacy: string;
+    };
+  };
+  careers: {
+    hero: { eyebrow: string; title: string; lead: string };
+    why: { title: string; items: { title: string; text: string }[] };
+    jobs: { title: string; lead: string; profileLabel: string; empty: string; apply: string; details: string; share: string };
+    spontaneous: { title: string; text: string; label: string };
+    form: {
+      title: string;
+      lead: string;
+      name: string;
+      email: string;
+      phone: string;
+      position: string;
+      spontaneousOption: string;
+      message: string;
+      messageHint: string;
+      cv: string;
+      cvHint: string;
+      submit: string;
+      sending: string;
+      success: string;
+      error: string;
+      required: string;
+      invalidEmail: string;
+      cvRequired: string;
       privacy: string;
     };
   };

@@ -206,3 +206,66 @@ export const media = mysqlTable('media', {
   uploadedBy: char('uploaded_by', { length: 36 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+/* ==========================================================================
+   Carreiras — vagas e candidaturas
+   ========================================================================== */
+
+export const jobs = mysqlTable(
+  'jobs',
+  {
+    id: char('id', { length: 36 }).primaryKey(),
+    slug: varchar('slug', { length: 120 }).notNull(),
+    position: int('position').notNull().default(0),
+    published: boolean('published').notNull().default(true),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('jobs_slug_unique').on(table.slug)],
+);
+
+export const jobTranslations = mysqlTable(
+  'job_translations',
+  {
+    jobId: char('job_id', { length: 36 }).notNull(),
+    locale: varchar('locale', { length: 5 }).notNull().$type<'pt' | 'en'>(),
+    title: varchar('title', { length: 200 }).notNull(),
+    department: varchar('department', { length: 160 }).notNull().default(''),
+    type: varchar('type', { length: 80 }).notNull().default(''),
+    location: varchar('location', { length: 160 }).notNull().default(''),
+    intro: text('intro').notNull(),
+    /** [{ title, items: string[] }] — o que irá fazer, requisitos, valorizamos */
+    sections: json('sections').notNull().$type<{ title: string; items: string[] }[]>(),
+    profile: text('profile').notNull().default(''),
+  },
+  (table) => [primaryKey({ columns: [table.jobId, table.locale] })],
+);
+
+export const applications = mysqlTable(
+  'applications',
+  {
+    id: char('id', { length: 36 }).primaryKey(),
+    /** vaga a que se candidatou; null se a vaga foi apagada ou candidatura espontânea */
+    jobId: char('job_id', { length: 36 }),
+    /** título da vaga no momento da candidatura, para o histórico não depender da vaga */
+    jobTitle: varchar('job_title', { length: 200 }).notNull().default(''),
+    name: varchar('name', { length: 160 }).notNull(),
+    email: varchar('email', { length: 200 }).notNull(),
+    phone: varchar('phone', { length: 60 }).notNull().default(''),
+    message: text('message').notNull().default(''),
+    /** nome do ficheiro do CV dentro da pasta privada de CVs (não é URL pública) */
+    cvPath: varchar('cv_path', { length: 300 }).notNull().default(''),
+    /** nome original do ficheiro, para mostrar e descarregar com um nome legível */
+    cvFilename: varchar('cv_filename', { length: 300 }).notNull().default(''),
+    locale: varchar('locale', { length: 5 }).notNull().default('pt'),
+    /** estado da gestão: nova, em análise, entrevista, aceite, recusada */
+    status: varchar('status', { length: 20 }).notNull().default('nova').$type<ApplicationStatus>(),
+    /** notas internas da equipa — nunca vistas pelo candidato */
+    notes: text('notes').notNull().default(''),
+    readAt: timestamp('read_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [index('applications_created_idx').on(table.createdAt)],
+);
+
+export type ApplicationStatus = 'nova' | 'em_analise' | 'entrevista' | 'aceite' | 'recusada';

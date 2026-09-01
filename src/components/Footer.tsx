@@ -40,6 +40,9 @@ export function Footer({
                 <Link href={href(locale, paths.projects)}>{content.nav.projects}</Link>
               </li>
               <li>
+                <Link href={href(locale, paths.careers)}>{content.nav.careers}</Link>
+              </li>
+              <li>
                 <Link href={href(locale, paths.contact)}>{content.nav.contact}</Link>
               </li>
             </ul>

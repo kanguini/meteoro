@@ -1,9 +1,12 @@
 import { and, asc, eq } from 'drizzle-orm';
 import { db, hasDatabase } from '@/db';
-import { pageContent, projects, projectTranslations, services, serviceTranslations, settings } from '@/db/schema';
+import { jobs, jobTranslations, pageContent, projects, projectTranslations, services, serviceTranslations, settings } from '@/db/schema';
 import { getContent as getStaticContent } from '@/i18n';
 import { deepMerge } from '@/lib/deep-merge';
 import { site as staticSite } from '@/lib/site';
+import { SEED_JOBS, type SeedJobTranslation } from '@/lib/careers-seed';
+import type { JobEntry } from '@/lib/careers-types';
+export type { JobEntry };
 import type { Locale } from '@/i18n/config';
 import type { Content, Service } from '@/i18n/types';
 
@@ -214,4 +217,51 @@ export async function getSiteContent(locale: Locale): Promise<Content> {
 
   merged.services.items = await getServices(locale);
   return merged;
+}
+
+/** Vagas de emprego para o site público, com fallback para as vagas-semente. */
+export async function getJobs(locale: Locale): Promise<JobEntry[]> {
+  const fallback = (): JobEntry[] =>
+    SEED_JOBS.map((job) => {
+      const t: SeedJobTranslation = job[locale];
+      return { slug: job.slug, ...t };
+    });
+
+  return readOrFallback(
+    async () => {
+      const rows = await db
+        .select({
+          slug: jobs.slug,
+          title: jobTranslations.title,
+          department: jobTranslations.department,
+          type: jobTranslations.type,
+          location: jobTranslations.location,
+          intro: jobTranslations.intro,
+          sections: jobTranslations.sections,
+          profile: jobTranslations.profile,
+        })
+        .from(jobs)
+        .innerJoin(
+          jobTranslations,
+          and(eq(jobTranslations.jobId, jobs.id), eq(jobTranslations.locale, locale)),
+        )
+        .where(eq(jobs.published, true))
+        .orderBy(asc(jobs.position));
+
+      // Base ligada mas sem vagas é um estado legítimo (não há vagas abertas):
+      // devolve lista vazia, ao contrário dos serviços. A página trata o vazio.
+      return rows.map((row) => ({
+        slug: row.slug,
+        title: row.title,
+        department: row.department,
+        type: row.type,
+        location: row.location,
+        intro: row.intro,
+        sections: row.sections,
+        profile: row.profile,
+      }));
+    },
+    fallback,
+    'as vagas',
+  );
 }

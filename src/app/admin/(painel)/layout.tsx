@@ -1,6 +1,6 @@
 import { and, count, isNull } from 'drizzle-orm';
 import { db } from '@/db';
-import { messages } from '@/db/schema';
+import { applications, messages } from '@/db/schema';
 import { requireUser } from '@/lib/auth/guard';
 import { tryQuery } from '@/lib/db-health';
 import { AdminNav } from './AdminNav';
@@ -12,14 +12,15 @@ export default async function PainelLayout({ children }: { children: React.React
   // Se esta contagem falhar, a página seguinte explica porquê — a casca não
   // pode ser o que derruba o painel inteiro.
   const unreadResult = await tryQuery(async () => {
-    const [row] = await db
+    const [msg] = await db
       .select({ total: count() })
       .from(messages)
       .where(and(isNull(messages.readAt), isNull(messages.archivedAt)));
-    return row?.total ?? 0;
+    const [app] = await db.select({ total: count() }).from(applications).where(isNull(applications.readAt));
+    return { messages: msg?.total ?? 0, applications: app?.total ?? 0 };
   });
 
-  const unread = unreadResult.ok ? unreadResult.data : 0;
+  const unread = unreadResult.ok ? unreadResult.data : { messages: 0, applications: 0 };
 
   return (
     <div className="admin">
@@ -29,7 +30,11 @@ export default async function PainelLayout({ children }: { children: React.React
             Meteoro<span>.24</span>
           </p>
 
-          <AdminNav unread={unread} isOwner={user.role === 'owner'} />
+          <AdminNav
+            unreadMessages={unread.messages}
+            unreadApplications={unread.applications}
+            isOwner={user.role === 'owner'}
+          />
 
           <div className="admin-side__foot">
             <div className="admin-side__user">
