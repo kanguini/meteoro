@@ -19,6 +19,7 @@ export function ImageHero({
   cornerActions,
   meta,
   large = false,
+  variant = 'image',
 }: {
   eyebrow: string;
   title: React.ReactNode;
@@ -35,28 +36,37 @@ export function ImageHero({
   cornerActions?: React.ReactNode;
   meta?: [string, string];
   large?: boolean;
+  /** fundo do hero: 'image' (fotografia/vídeo) ou 'gradient' (gradiente vermelho com ruído) */
+  variant?: 'image' | 'gradient';
 }) {
+  const isGradient = variant === 'gradient';
   return (
-    <section className={['hero', large ? '' : 'hero--page'].join(' ')}>
-      <div className="hero__media">
-        {isVideo(image.src) ? (
-          // O vídeo respeita "reduzir movimento" — ver HeroVideo.
-          <HeroVideo src={image.src} poster={poster} alt={image.alt} objectPosition={imagePosition} />
-        ) : (
-          <Image
-            src={image.src}
-            alt={image.alt}
-            fill
-            priority
-            sizes="100vw"
-            // Endereços externos não passam pelo optimizador: evita ter de
-            // autorizar domínios um a um e de servir de proxy a terceiros.
-            unoptimized={isExternal(image.src)}
-            style={{ objectFit: 'cover', objectPosition: imagePosition ?? 'center' }}
-          />
-        )}
-      </div>
-      <div className="hero__scrim" />
+    <section className={['hero', large ? '' : 'hero--page', isGradient ? 'hero--gradient' : ''].filter(Boolean).join(' ')}>
+      {isGradient ? (
+        <div className="hero__noise" aria-hidden="true" />
+      ) : (
+        <>
+          <div className="hero__media">
+            {isVideo(image.src) ? (
+              // O vídeo respeita "reduzir movimento" — ver HeroVideo.
+              <HeroVideo src={image.src} poster={poster} alt={image.alt} objectPosition={imagePosition} />
+            ) : (
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                priority
+                sizes="100vw"
+                // Endereços externos não passam pelo optimizador: evita ter de
+                // autorizar domínios um a um e de servir de proxy a terceiros.
+                unoptimized={isExternal(image.src)}
+                style={{ objectFit: 'cover', objectPosition: imagePosition ?? 'center' }}
+              />
+            )}
+          </div>
+          <div className="hero__scrim" />
+        </>
+      )}
       <div className="container hero__inner">
         <Reveal mode="load">
           <span className="eyebrow eyebrow--marked">{eyebrow}</span>

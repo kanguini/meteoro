@@ -22,6 +22,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <PageShell locale={locale} content={content} transparentHeader>
       <ImageHero
         large
+        variant="gradient"
         eyebrow={home.hero.eyebrow}
         /* O H1 é o slogan da marca — não se traduz. Editável em Definições. */
         title={settings.slogan}

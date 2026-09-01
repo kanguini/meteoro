@@ -807,6 +807,38 @@ textarea {
   overflow: hidden;
 }
 
+/* Hero com gradiente vermelho e ruído (sem fotografia) */
+.hero--gradient {
+  background:
+    /* escurece o topo para o cabeçalho se ler bem sobre o hero */
+    linear-gradient(to bottom, rgba(90, 6, 15, 0.55) 0%, rgba(90, 6, 15, 0) 22%),
+    radial-gradient(120% 130% at 72% 48%, rgba(255, 94, 104, 0.5) 0%, rgba(255, 94, 104, 0) 55%),
+    radial-gradient(130% 130% at 90% 95%, rgba(122, 8, 20, 0.75) 0%, rgba(122, 8, 20, 0) 55%),
+    linear-gradient(135deg, #8f0c1d 0%, #c00f2b 52%, #d81733 100%);
+  color: var(--white);
+}
+
+/* Sobre o gradiente vermelho, a segunda linha do slogan não pode ser vermelha */
+.hero--gradient .hero__statement span:last-child {
+  color: #ffdfe3;
+}
+
+/* Camada de grão/ruído por cima do gradiente, subtil */
+.hero__noise {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.14;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+}
+
+.hero--gradient .hero__lead {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .hero--page {
   min-height: min(70vh, 660px);
 }
@@ -920,9 +952,9 @@ textarea {
   right: var(--gutter);
   bottom: clamp(1.75rem, 4vw, 3rem);
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.9rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.75rem;
   text-align: right;
 }
 
