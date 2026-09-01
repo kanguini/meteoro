@@ -5,8 +5,8 @@
 
 :root {
   /* Cor */
-  --bg: #e4e3e1;
-  --bg-raised: #ededec;
+  --bg: #f6f4f2;
+  --bg-raised: #fdfcfb;
   --ink: #101010;
   --ink-soft: #5c5c5c;
   --ink-faint: #65615a; /* escurecido para passar o contraste AA (4.8:1) */
@@ -508,27 +508,26 @@ textarea {
   border-bottom-color: transparent;
 }
 
-/* Logótipo tipográfico — METEORO com o .24 em vermelho */
+/* Logótipo oficial — lettering METEORO + símbolo das órbitas */
 .logo {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.15em;
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  align-items: center;
+  gap: 0.55em;
   line-height: 1;
   white-space: nowrap;
 }
 
-.logo__mark {
-  color: var(--red);
-  letter-spacing: 0.05em;
+.logo__word {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
 }
 
-.header.is-solid .logo__mark,
-.header.is-open .logo__mark {
-  color: var(--red);
+.logo__symbol {
+  width: 1.7em;
+  height: 1.7em;
+  flex: none;
 }
 
 .nav {
@@ -912,6 +911,67 @@ textarea {
   flex-wrap: wrap;
   gap: 1rem;
   margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+/* Ligações discretas fixas no canto inferior direito do hero */
+.hero__corner {
+  position: absolute;
+  z-index: 2;
+  right: var(--gutter);
+  bottom: clamp(1.75rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.9rem;
+  text-align: right;
+}
+
+.hero__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--white);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease), gap 0.3s var(--ease);
+}
+
+.hero__link:hover {
+  color: var(--red-bright);
+  border-color: var(--red-bright);
+  gap: 1rem;
+}
+
+.hero__link svg {
+  flex: none;
+  transition: transform 0.3s var(--ease);
+}
+
+.hero__link:hover svg {
+  transform: translateX(3px);
+}
+
+@media (max-width: 640px) {
+  /* Em ecrãs pequenos as ligações passam para baixo do conteúdo, à esquerda. */
+  .hero {
+    flex-wrap: wrap;
+  }
+
+  .hero__inner {
+    flex: 1 1 100%;
+  }
+
+  .hero__corner {
+    position: static;
+    flex: 1 1 100%;
+    align-items: flex-start;
+    text-align: left;
+    margin-top: 1.75rem;
+  }
 }
 
 .hero__rule {

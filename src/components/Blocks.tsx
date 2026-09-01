@@ -16,6 +16,7 @@ export function ImageHero({
   poster,
   imagePosition,
   actions,
+  cornerActions,
   meta,
   large = false,
 }: {
@@ -30,6 +31,8 @@ export function ImageHero({
   /** `object-position` da fotografia, para afastar o motivo principal do texto */
   imagePosition?: string;
   actions?: React.ReactNode;
+  /** ligações discretas fixas no canto inferior direito do hero */
+  cornerActions?: React.ReactNode;
   meta?: [string, string];
   large?: boolean;
 }) {
@@ -88,6 +91,11 @@ export function ImageHero({
           </Reveal>
         )}
       </div>
+      {cornerActions && (
+        <Reveal mode="load" delay={300} className="hero__corner">
+          {cornerActions}
+        </Reveal>
+      )}
     </section>
   );
 }

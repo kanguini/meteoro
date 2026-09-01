@@ -1,13 +1,14 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PageShell } from '@/components/PageShell';
 import { Reveal } from '@/components/Reveal';
-import { ArrowLink, ImageHero, Keywords, Pillars, Steps, ValueGrid } from '@/components/Blocks';
+import { ArrowLink, ImageHero, Pillars, Steps, ValueGrid } from '@/components/Blocks';
 import { ArrowRight } from '@/components/Icons';
 import { isLocale } from '@/i18n';
 import { getSettings, getSiteContent } from '@/lib/content';
+import { isExternal } from '@/lib/media';
 import { href, paths, serviceHref } from '@/lib/routes';
-import { site } from '@/lib/site';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -27,21 +28,20 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         statement={home.hero.statement.map((line) => (
           <span key={line}>{line}</span>
         ))}
-        lead={home.hero.lead}
         image={{
           src: settings.coverImage,
           alt: settings.coverAlt || content.services.items[2]?.image?.alt || '',
         }}
         poster={settings.coverPoster}
-        meta={[`${site.name} · ${site.descriptor[locale]}`, `${content.footer.country} · ${site.founded}`]}
-        actions={
+        cornerActions={
           <>
-            <Link href={href(locale, paths.contact)} className="btn btn--red">
+            <Link href={href(locale, paths.contact)} className="hero__link">
               {home.hero.ctaPrimary}
               <ArrowRight />
             </Link>
-            <Link href={href(locale, paths.services)} className="btn btn--ghost">
+            <Link href={href(locale, paths.services)} className="hero__link">
               {home.hero.ctaSecondary}
+              <ArrowRight />
             </Link>
           </>
         }
@@ -70,38 +70,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
 
       {/* A Meteoro 24 */}
-      <section className="section section--dark">
-        <div className="container">
-          <div className="split">
-            <Reveal className="split__aside">
-              <span className="eyebrow eyebrow--marked">{home.about.eyebrow}</span>
-            </Reveal>
-            <div className="split__main">
-              <Reveal>
-                <h2 className="h2">{home.about.title}</h2>
-              </Reveal>
-              {home.about.body.map((paragraph, index) => (
-                <Reveal key={paragraph} delay={100 + index * 80}>
-                  <p className="body-text" style={{ marginTop: '1.75rem' }}>
-                    {paragraph}
-                  </p>
-                </Reveal>
-              ))}
-              <Reveal delay={220}>
-                <div style={{ marginTop: '2.5rem' }}>
-                  <Keywords items={home.about.keywords} />
-                </div>
-              </Reveal>
-              <Reveal delay={300}>
-                <div style={{ marginTop: '2.5rem' }}>
-                  <ArrowLink href={href(locale, paths.about)}>{home.about.cta}</ArrowLink>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Serviços */}
       <section className="section">
         <div className="container">
@@ -121,15 +89,34 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
           </div>
 
-          <div className="service-list">
+          <div className="typology-grid">
             {services.items.map((service, index) => (
               <Reveal key={service.slug} delay={index * 60}>
-                <Link href={serviceHref(locale, service.slug)} className="service-row">
-                  <span className="service-row__num">{service.number}</span>
-                  <h3 className="service-row__title">{service.title}</h3>
-                  <p className="service-row__desc">{service.short}</p>
-                  <span className="service-row__go" aria-hidden="true">
-                    <ArrowRight size={18} />
+                <Link
+                  href={serviceHref(locale, service.slug)}
+                  className={['typology', service.image ? '' : 'typology--plain'].filter(Boolean).join(' ')}
+                >
+                  {service.image && (
+                    <>
+                      <Image
+                        src={service.image.src}
+                        alt={service.image.alt}
+                        fill
+                        sizes="(max-width: 900px) 100vw, 33vw"
+                        unoptimized={isExternal(service.image.src)}
+                        style={{ objectFit: 'cover' }}
+                      />
+                      <span className="typology__scrim" />
+                    </>
+                  )}
+                  <span className="typology__content">
+                    <span className="typology__num">{service.number}</span>
+                    <span className="typology__title" style={{ display: 'block' }}>
+                      {service.title}
+                    </span>
+                    <span className="typology__text" style={{ display: 'block' }}>
+                      {service.short}
+                    </span>
                   </span>
                 </Link>
               </Reveal>
