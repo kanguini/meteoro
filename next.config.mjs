@@ -39,12 +39,32 @@ const nextConfig = {
       { key: 'Content-Security-Policy', value: csp },
     ];
 
+    // Cache curta para o HTML das páginas. O Next marca as páginas estáticas com
+    // s-maxage de 1 ano, à espera que a CDN limpe no deploy; a CDN da Hostinger
+    // NÃO limpa, e ficava a servir HTML velho até 1 ano. Isto força a CDN a
+    // revalidar a cada minuto — um redeploy fica visível quase de imediato. Os
+    // ficheiros com hash (/_next/static) e as imagens ficam de fora, para
+    // manterem a cache longa (o conteúdo deles nunca muda para o mesmo URL).
+    const htmlCache = {
+      key: 'Cache-Control',
+      value: 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400',
+    };
+
     return [
       { source: '/:path*', headers: common },
+      // Documentos, robots e sitemap: cache curta e revalidação. Exclui os
+      // assets estáticos e as imagens (mantêm a sua própria cache longa).
+      {
+        source: '/:path((?!_next/static|_next/image|images/|uploads/|admin|api/).*)',
+        headers: [htmlCache],
+      },
       // O painel nunca deve ser indexado nem cacheado por intermediários.
       {
         source: '/admin/:path*',
-        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+          { key: 'Cache-Control', value: 'private, no-store' },
+        ],
       },
     ];
   },
