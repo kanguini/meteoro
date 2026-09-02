@@ -24,7 +24,8 @@ const nextConfig = {
       "media-src 'self' https:",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "script-src 'self' 'unsafe-inline'",
+      // 'unsafe-eval' só em dev: o React usa eval() para debug; em produção nunca.
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
       "connect-src 'self'",
       'upgrade-insecure-requests',
     ].join('; ');

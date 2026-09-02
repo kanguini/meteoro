@@ -1,15 +1,32 @@
+import Image from 'next/image';
+
 /**
- * Logótipo da Meteoro.
+ * Logótipo oficial da Meteoro (ficheiros fidedignos em public/images).
  *
- * INTERINO: mostra só o lettering. O símbolo oficial das órbitas deve vir dos
- * ficheiros fidedignos da marca — assim que estiverem em public/images/
- * (logo.svg para fundos claros, logo-white.svg para fundos escuros), este
- * componente passa a usá-los. Não se recria o símbolo.
+ * Rende as duas versões e o CSS mostra a certa conforme o fundo: a branca sobre
+ * o hero vermelho, o painel móvel e o rodapé (fundos escuros); a escura no
+ * cabeçalho sólido (fundo claro). Ver .logo__img em globals.css.
  */
 export function Logo() {
   return (
     <span className="logo" aria-label="Meteoro 24">
-      <span className="logo__word">METEORO</span>
+      <Image
+        className="logo__img logo__img--dark"
+        src="/images/logo-dark.png"
+        alt="Meteoro 24"
+        width={1236}
+        height={319}
+        priority
+      />
+      <Image
+        className="logo__img logo__img--white"
+        src="/images/logo-white.png"
+        alt=""
+        width={1236}
+        height={320}
+        aria-hidden="true"
+        priority
+      />
     </span>
   );
 }

@@ -508,26 +508,41 @@ textarea {
   border-bottom-color: transparent;
 }
 
-/* Logótipo oficial — lettering METEORO + símbolo das órbitas */
+/* Logótipo oficial — imagens fidedignas, versão conforme o fundo */
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.55em;
   line-height: 1;
-  white-space: nowrap;
 }
 
-.logo__word {
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
+.logo__img {
+  height: 1.85rem;
+  width: auto;
+  display: block;
 }
 
-.logo__symbol {
-  width: 1.7em;
-  height: 1.7em;
-  flex: none;
+/* Por omissão (cabeçalho transparente sobre o hero, e rodapé): versão branca */
+.logo__img--dark {
+  display: none;
+}
+.logo__img--white {
+  display: block;
+}
+
+/* Cabeçalho sólido (fundo claro): versão escura */
+.header.is-solid .logo__img--white {
+  display: none;
+}
+.header.is-solid .logo__img--dark {
+  display: block;
+}
+
+/* Painel móvel aberto (fundo escuro): força a versão branca */
+.header.is-open .logo__img--dark {
+  display: none;
+}
+.header.is-open .logo__img--white {
+  display: block;
 }
 
 .nav {
